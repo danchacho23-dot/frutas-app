@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Frutas y Verduras Frescas</title>
+  <title>Fresko App</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     :root {
@@ -14,42 +14,91 @@
     }
     html { scroll-behavior:smooth; }
     body { background:var(--bg); color:var(--text); padding-bottom:100px; }
-    header { background:linear-gradient(135deg,#2f9e44,#8ce99a); color:white; padding:58px 18px 38px; text-align:center; border-bottom-left-radius:30px; border-bottom-right-radius:30px; box-shadow:0 12px 28px rgba(0,0,0,.16); position:relative; }
+    header {
+      background:linear-gradient(135deg,#2f9e44,#8ce99a);
+      color:white; padding:58px 18px 38px; text-align:center;
+      border-bottom-left-radius:30px; border-bottom-right-radius:30px;
+      box-shadow:0 12px 28px rgba(0,0,0,.16); position:relative;
+    }
     header h1 { font-size:30px; margin-bottom:8px; }
     header p { font-size:16px; opacity:.96; }
     .top-actions { position:absolute; top:14px; right:14px; display:flex; gap:8px; }
-    .small-top-btn { border:none; background:rgba(255,255,255,.96); color:var(--green-dark); font-weight:bold; padding:10px 14px; border-radius:999px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.14); }
-    .store-info { background:white; width:calc(100% - 28px); max-width:980px; margin:-22px auto 18px; padding:14px; border-radius:20px; box-shadow:var(--shadow); text-align:center; font-size:14px; line-height:1.6; position:relative; z-index:2; }
+    .small-top-btn {
+      border:none; background:rgba(255,255,255,.96); color:var(--green-dark);
+      font-weight:bold; padding:10px 14px; border-radius:999px; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.14);
+    }
+    .store-info {
+      background:white; width:calc(100% - 28px); max-width:980px;
+      margin:-22px auto 18px; padding:14px; border-radius:20px;
+      box-shadow:var(--shadow); text-align:center; font-size:14px; line-height:1.6;
+      position:relative; z-index:2;
+    }
     .container { width:100%; max-width:1150px; margin:auto; padding:0 14px; }
     .section-title { margin:24px 0 12px; font-size:22px; color:var(--green); }
     .toolbar { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin-bottom:12px; }
-    input, textarea, select { width:100%; border:1px solid #d1d5db; border-radius:14px; padding:12px 14px; font-size:14px; background:white; outline:none; }
-    input:focus, textarea:focus, select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(47,158,68,.12); }
+    input, textarea, select {
+      width:100%; border:1px solid #d1d5db; border-radius:14px;
+      padding:12px 14px; font-size:14px; background:white; outline:none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color:var(--green); box-shadow:0 0 0 3px rgba(47,158,68,.12);
+    }
     textarea { min-height:76px; resize:vertical; }
     .search-input { border-radius:999px; padding:14px 16px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
-    .result-count { background:white; color:var(--green-dark); font-weight:bold; padding:12px 14px; border-radius:999px; box-shadow:0 3px 12px rgba(0,0,0,.05); white-space:nowrap; font-size:14px; }
+    .result-count {
+      background:white; color:var(--green-dark); font-weight:bold;
+      padding:12px 14px; border-radius:999px; box-shadow:0 3px 12px rgba(0,0,0,.05);
+      white-space:nowrap; font-size:14px;
+    }
     .categories { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px; }
-    .category-btn { border:none; background:white; padding:12px 18px; border-radius:999px; font-weight:bold; color:var(--green); box-shadow:0 3px 12px rgba(0,0,0,.08); cursor:pointer; white-space:nowrap; transition:.18s ease; }
+    .category-btn {
+      border:none; background:white; padding:12px 18px; border-radius:999px;
+      font-weight:bold; color:var(--green); box-shadow:0 3px 12px rgba(0,0,0,.08);
+      cursor:pointer; white-space:nowrap; transition:.18s ease;
+    }
     .category-btn.active, .category-btn:hover { background:var(--green); color:white; transform:translateY(-1px); }
     .closed-notice { background:#fee2e2; color:#991b1b; padding:12px; border-radius:16px; margin:12px 0; font-weight:bold; text-align:center; }
     .products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:14px; }
-    .product-card { background:white; border-radius:22px; padding:13px; box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:space-between; min-height:252px; transition:.18s ease; border:1px solid rgba(226,232,240,.8); }
+    .product-card {
+      background:white; border-radius:22px; padding:13px; box-shadow:var(--shadow);
+      display:flex; flex-direction:column; justify-content:space-between;
+      min-height:252px; transition:.18s ease; border:1px solid rgba(226,232,240,.8);
+    }
     .product-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.1); }
     .product-card.sold-out { opacity:.72; }
-    .product-img-wrap { width:100%; height:86px; border-radius:18px; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:10px; }
+    .product-img-wrap {
+      width:100%; height:86px; border-radius:18px; background:#f8fafc;
+      display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:10px;
+    }
     .product-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
     .product-emoji { font-size:50px; line-height:1; }
-    .sold-out-label { display:inline-block; background:#fee2e2; color:#991b1b; font-weight:bold; padding:5px 9px; border-radius:999px; margin:0 0 6px; font-size:12px; }
+    .sold-out-label {
+      display:inline-block; background:#fee2e2; color:#991b1b; font-weight:bold;
+      padding:5px 9px; border-radius:999px; margin:0 0 6px; font-size:12px;
+    }
     .product-card h3 { font-size:16px; margin-bottom:5px; line-height:1.15; }
     .product-card p { font-size:12.5px; color:var(--muted); margin-bottom:5px; line-height:1.3; }
     .price { font-size:18px; font-weight:bold; color:#e8590c; margin:8px 0 10px; }
-    .add-btn { background:var(--orange); color:white; border:none; padding:12px; border-radius:14px; font-weight:bold; cursor:pointer; font-size:14px; width:100%; transition:.16s ease; }
+    .add-btn {
+      background:var(--orange); color:white; border:none; padding:12px; border-radius:14px;
+      font-weight:bold; cursor:pointer; font-size:14px; width:100%; transition:.16s ease;
+    }
     .add-btn:hover { background:var(--orange-dark); transform:translateY(-1px); }
     .add-btn:disabled { background:#cbd5e1; cursor:not-allowed; transform:none; }
-    .card-qty-controls { display:grid; grid-template-columns:42px 1fr 42px; align-items:center; gap:8px; background:var(--green-soft); padding:7px; border-radius:16px; }
-    .card-qty-controls button, .qty-btn { border:none; border-radius:50%; background:var(--green); color:white; font-weight:bold; cursor:pointer; font-size:18px; height:34px; width:34px; display:inline-flex; align-items:center; justify-content:center; }
+    .card-qty-controls {
+      display:grid; grid-template-columns:42px 1fr 42px; align-items:center; gap:8px;
+      background:var(--green-soft); padding:7px; border-radius:16px;
+    }
+    .card-qty-controls button, .qty-btn {
+      border:none; border-radius:50%; background:var(--green); color:white; font-weight:bold;
+      cursor:pointer; font-size:18px; height:34px; width:34px; display:inline-flex;
+      align-items:center; justify-content:center;
+    }
     .card-qty-controls strong { text-align:center; color:var(--green-dark); font-size:16px; }
-    .cart-panel, .admin-panel { background:white; margin:26px 0; padding:16px; border-radius:24px; box-shadow:var(--shadow); }
+    .cart-panel, .admin-panel {
+      background:white; margin:26px 0; padding:16px; border-radius:24px; box-shadow:var(--shadow);
+    }
     .cart-empty { color:#6b7280; text-align:center; padding:14px; }
     .cart-item { display:grid; grid-template-columns:1fr auto; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
     .cart-item:last-child { border-bottom:none; }
@@ -59,6 +108,839 @@
     .remove-btn { background:transparent; border:none; color:var(--red); cursor:pointer; font-size:13px; margin-top:8px; font-weight:bold; }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-top:18px; font-size:22px; font-weight:bold; color:var(--green); }
     .customer-fields, .admin-form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:18px; }
+    label { font-size:13px; color:#475569; font-weight:bold; margin-bottom:5px; display:block; }
+    .form-field.full { grid-column:1 / -1; }
+    .whatsapp-btn {
+      width:100%; margin-top:16px; background:#25d366; color:white; border:none; padding:16px;
+      border-radius:16px; font-size:18px; font-weight:bold; cursor:pointer;
+      box-shadow:0 6px 18px rgba(37,211,102,.35);
+    }
+    .whatsapp-btn:hover { background:#20bd5a; }
+    .clear-btn {
+      width:100%; margin-top:10px; background:#f1f3f5; color:#495057; border:none;
+      padding:12px; border-radius:14px; cursor:pointer; font-weight:bold;
+    }
+    .admin-toggle-line { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:14px; }
+    .admin-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .admin-btn {
+      border:none; padding:11px 14px; border-radius:13px; font-weight:bold;
+      cursor:pointer; background:var(--green); color:white; transition:.15s ease;
+    }
+    .admin-btn:hover { transform:translateY(-1px); filter:brightness(.98); }
+    .admin-btn.warning { background:var(--orange); }
+    .admin-btn.danger { background:var(--red); }
+    .admin-btn.gray { background:#64748b; }
+    .admin-note {
+      background:#fff9db; border:1px solid #ffe066; color:#5c3d00; padding:12px;
+      border-radius:14px; margin:12px 0; font-size:14px; line-height:1.45;
+    }
+    .admin-editor { background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:20px; margin-top:12px; }
+    .admin-list { margin-top:18px; display:grid; gap:10px; }
+    .admin-item {
+      border:1px solid var(--border); border-radius:18px; padding:12px;
+      display:grid; grid-template-columns:58px 1fr; gap:12px; align-items:center;
+      background:#fcfcfd; transition:.16s ease;
+    }
+    .admin-item:hover { border-color:#b7e4c7; background:#fff; }
+    .admin-thumb {
+      width:58px; height:58px; border-radius:16px; background:#eef2f7; overflow:hidden;
+      display:flex; align-items:center; justify-content:center; font-size:32px;
+    }
+    .admin-thumb img { width:100%; height:100%; object-fit:cover; }
+    .admin-item h4 { margin-bottom:3px; }
+    .admin-item p { color:var(--muted); font-size:13px; line-height:1.35; margin-bottom:8px; }
+    .hidden-badge {
+      display:inline-block; background:#fee2e2; color:#991b1b; padding:3px 7px;
+      border-radius:999px; font-size:11px; font-weight:bold; margin-left:6px;
+    }
+    .editing-badge {
+      display:inline-block; background:#dcfce7; color:#166534; padding:4px 9px;
+      border-radius:999px; font-size:12px; font-weight:bold; margin-bottom:8px;
+    }
+    .login-box { background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:20px; margin-top:12px; }
+    .benefits { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:24px 0; }
+    .benefit { background:#fff9db; padding:16px; border-radius:18px; text-align:center; font-weight:bold; color:#5c3d00; box-shadow:0 3px 12px rgba(0,0,0,.06); }
+    .floating-cart {
+      position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
+      width:calc(100% - 28px); max-width:720px; background:var(--green); color:white;
+      border-radius:18px; padding:14px 16px; display:flex; justify-content:space-between;
+      align-items:center; box-shadow:0 10px 28px rgba(0,0,0,.25); z-index:10; cursor:pointer;
+    }
+    .floating-cart strong { font-size:17px; }
+    footer { text-align:center; color:#6b7280; padding:24px 14px; font-size:14px; }
+    .hide { display:none !important; }
+    @media (max-width:600px) {
+      header h1{font-size:25px;}
+      .toolbar{grid-template-columns:1fr;}
+      .products-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
+      .product-card{min-height:250px; padding:11px; border-radius:18px;}
+      .product-img-wrap{height:74px;}
+      .product-emoji{font-size:42px;}
+      .admin-item{grid-template-columns:48px 1fr;}
+      .admin-thumb{width:48px;height:48px;font-size:27px;}
+      .top-actions{right:10px;top:10px;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top-actions"><button class="small-top-btn" type="button" id="adminTopBtn">Admin</button></div>
+    <h1 id="storeTitle">Fresko App</h1>
+    <p id="storeSubtitle">Calidad, frescura y buenos precios para tu hogar</p>
+  </header>
+
+  <div class="store-info">
+    <strong>Nombre de la tienda:</strong> <span id="storeNameText">Fresko App</span><br />
+    <strong>Horario:</strong> <span id="storeHoursText">Lunes a Domingo | 8:00 a.m. - 7:00 p.m.</span><br />
+    <strong>Delivery:</strong> <span id="storeDeliveryText">Disponible por WhatsApp</span><br />
+    <strong>Pedido mínimo:</strong> <span id="storeMinimumText">$10.00</span><br />
+    <strong>Estado:</strong> <span id="storeOpenText">Abierta</span>
+  </div>
+
+  <main class="container">
+    <section id="shopArea">
+      <h2 class="section-title">Haz tu pedido</h2>
+      <div id="closedNotice" class="closed-notice hide">Estamos cerrados. Puedes dejar tu pedido para mañana.</div>
+      <div class="toolbar">
+        <input class="search-input" id="searchInput" type="search" placeholder="Buscar frutas o verduras..." />
+        <div class="result-count" id="resultCount">0 productos</div>
+      </div>
+      <div class="categories" id="categories"></div>
+      <section class="products-grid" id="productsGrid">
+        <div class="cart-empty">Cargando productos...</div>
+      </section>
+    </section>
+
+    <section class="cart-panel" id="cartSection">
+      <h2 class="section-title">Tu carrito</h2>
+      <div id="cartItems"></div>
+      <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+      <div class="customer-fields">
+        <input id="customerName" type="text" placeholder="Tu nombre" />
+        <input id="customerPayment" type="text" placeholder="Forma de pago" />
+        <textarea id="customerAddress" placeholder="Dirección de entrega"></textarea>
+        <textarea id="customerNotes" placeholder="Notas adicionales, ejemplo: bananas maduras, sin cebolla, etc."></textarea>
+      </div>
+      <button class="whatsapp-btn" type="button" id="whatsappBtn">Finalizar pedido por WhatsApp</button>
+      <button class="clear-btn" type="button" id="clearCartBtn">Vaciar carrito</button>
+    </section>
+
+    <section class="admin-panel hide" id="adminPanel">
+      <div class="admin-toggle-line">
+        <h2 class="section-title" style="margin:0;">Panel Admin</h2>
+        <button class="admin-btn gray" type="button" id="closeAdminBtn">Cerrar panel</button>
+      </div>
+
+      <div id="loginBox" class="login-box">
+        <h3 style="color:var(--green);">Entrar como admin</h3>
+        <p style="font-size:14px;color:var(--muted);margin:6px 0 12px;">Usa el email y contraseña que creaste en Firebase Authentication.</p>
+        <div class="admin-form-grid">
+          <input id="adminEmail" type="email" placeholder="Email admin" />
+          <input id="adminPassword" type="password" placeholder="Contraseña" />
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" type="button" id="loginBtn">Entrar</button>
+        </div>
+      </div>
+
+      <div id="adminContent" class="hide">
+        <div class="admin-note">
+          Los cambios se guardan en Firebase y se actualizan para todos. Si es la primera vez, toca <strong>Cargar catálogo inicial</strong>.
+        </div>
+
+        <div class="admin-actions">
+          <button class="admin-btn" type="button" id="seedBtn">Cargar catálogo inicial</button>
+          <button class="admin-btn gray" type="button" id="logoutBtn">Cerrar sesión</button>
+        </div>
+
+        <h3 style="margin-top:18px;color:var(--green);">Datos de la tienda</h3>
+        <div class="admin-form-grid">
+          <div class="form-field"><label>Nombre de la tienda</label><input id="adminStoreName" type="text" /></div>
+          <div class="form-field"><label>Subtítulo</label><input id="adminStoreSubtitle" type="text" /></div>
+          <div class="form-field"><label>Horario</label><input id="adminStoreHours" type="text" /></div>
+          <div class="form-field"><label>Delivery texto</label><input id="adminStoreDelivery" type="text" /></div>
+          <div class="form-field"><label>Costo delivery</label><input id="adminDeliveryFee" type="number" min="0" step="0.01" /></div>
+          <div class="form-field"><label>Pedido mínimo</label><input id="adminMinimumOrder" type="number" min="0" step="0.01" /></div>
+          <div class="form-field"><label>Estado tienda</label><select id="adminStoreOpen"><option value="true">Abierta</option><option value="false">Cerrada</option></select></div>
+        </div>
+        <div class="admin-actions"><button class="admin-btn" type="button" id="saveSettingsBtn">Guardar datos de tienda</button></div>
+
+        <div class="admin-editor" id="adminEditor">
+          <div id="editingStatus" class="editing-badge hide">Editando producto</div>
+          <h3 style="color:var(--green);">Producto</h3>
+          <input id="editingProductId" type="hidden" />
+          <div class="admin-form-grid">
+            <div class="form-field"><label>Nombre</label><input id="productName" type="text" placeholder="Ej: Banana" /></div>
+            <div class="form-field"><label>Categoría</label><select id="productCategory"><option>Frutas</option><option>Verduras</option><option>Tubérculos</option><option>Hierbas</option><option>Otros</option></select></div>
+            <div class="form-field"><label>Precio</label><input id="productPrice" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+            <div class="form-field"><label>Unidad</label><input id="productUnit" type="text" placeholder="libra, unidad, paquete..." /></div>
+            <div class="form-field"><label>Emoji</label><input id="productEmoji" type="text" placeholder="🍌" /></div>
+            <div class="form-field"><label>Ruta de foto</label><input id="productPhoto" type="text" placeholder="1.png" /></div>
+            <div class="form-field"><label>Visible</label><select id="productVisible"><option value="true">Sí, mostrar</option><option value="false">No, esconder</option></select></div>
+            <div class="form-field"><label>Disponibilidad</label><select id="productAvailable"><option value="true">Disponible</option><option value="false">Agotado</option></select></div>
+            <div class="form-field full"><label>Descripción</label><textarea id="productDescription" placeholder="Producto fresco seleccionado"></textarea></div>
+          </div>
+          <div class="admin-actions">
+            <button class="admin-btn" type="button" id="saveProductBtn">Guardar producto</button>
+            <button class="admin-btn warning" type="button" id="clearProductFormBtn">Nuevo / limpiar</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:24px;color:var(--green);">Lista de productos</h3>
+        <div class="toolbar" style="margin-top:10px;">
+          <input class="search-input" id="adminSearch" type="search" placeholder="Buscar producto para editar..." />
+          <div class="result-count" id="adminCount">0 productos</div>
+        </div>
+        <div class="admin-list" id="adminList"></div>
+      </div>
+    </section>
+
+    <section class="benefits">
+      <div class="benefit">📲 Pedidos por WhatsApp</div>
+      <div class="benefit">🥬 Productos frescos todos los días</div>
+      <div class="benefit">🛵 Entrega disponible</div>
+      <div class="benefit">🤝 Atención rápida y amable</div>
+    </section>
+  </main>
+
+  <div class="floating-cart" id="floatingCart"><span>🛒 <strong id="floatingCount">0</strong> productos</span><strong id="floatingTotal">$0.00</strong></div>
+
+  <footer>© 2026 Fresko App. Pedido directo por WhatsApp.</footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDocs,
+      setDoc,
+      deleteDoc,
+      writeBatch,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA08k-DcyW6E5WeKLUvjI_fapK6uE2aro8",
+      authDomain: "freskoapp-c495d.firebaseapp.com",
+      projectId: "freskoapp-c495d",
+      storageBucket: "freskoapp-c495d.firebasestorage.app",
+      messagingSenderId: "490937885428",
+      appId: "1:490937885428:web:8089c89688812c1470b4a1"
+    };
+
+    const ADMIN_UID = "gDK9Zay7iwSDh2dCdLdzXuR30PB2";
+    const whatsappNumber = "50769829621";
+    const IMAGE_FOLDER = "";
+    const IMAGE_EXTENSION = ".png";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const defaultSettings = {
+      name: "Fresko App",
+      subtitle: "Calidad, frescura y buenos precios para tu hogar",
+      hours: "Lunes a Domingo | 8:00 a.m. - 7:00 p.m.",
+      delivery: "Disponible por WhatsApp",
+      deliveryFee: 0,
+      minimumOrder: 10,
+      isOpen: true
+    };
+
+    const productData = [
+      [1,"Banana","Frutas",0.75,"libra","🍌","Banana fresca seleccionada"],
+      [2,"Plátano verde","Tubérculos",0.45,"unidad","🍌","Para patacones y comidas"],
+      [3,"Manzana roja","Frutas",0.85,"unidad","🍎","Dulce y crujiente"],
+      [4,"Manzana verde","Frutas",0.90,"unidad","🍏","Fresca y ácida"],
+      [5,"Naranja","Frutas",0.60,"unidad","🍊","Jugosa y fresca"],
+      [6,"Mandarina","Frutas",0.50,"unidad","🍊","Fácil de pelar"],
+      [7,"Limón persa","Frutas",0.35,"unidad","🍋","Grande y jugoso"],
+      [8,"Limón","Frutas",0.25,"unidad","🍋","Para jugos y comidas"],
+      [9,"Uva verde","Frutas",3.25,"libra","🍇","Fresca y dulce"],
+      [10,"Uva roja","Frutas",3.25,"libra","🍇","Fresca y dulce"],
+      [11,"Papaya","Frutas",2.00,"unidad","🟠","Madura y dulce"],
+      [12,"Mango","Frutas",0.90,"unidad","🥭","Tropical y dulce"],
+      [13,"Aguacate","Frutas",1.25,"unidad","🥑","Ideal para ensaladas y comidas"],
+      [14,"Fresa","Frutas",3.50,"paquete","🍓","Dulce y fresca"],
+      [15,"Blueberry","Frutas",4.50,"paquete","🫐","Fresco y saludable"],
+      [16,"Frambuesa","Frutas",4.50,"paquete","🍓","Delicada y dulce"],
+      [17,"Kiwi","Frutas",0.95,"unidad","🥝","Fresco y ácido"],
+      [18,"Pera","Frutas",0.90,"unidad","🍐","Dulce y jugosa"],
+      [19,"Durazno","Frutas",1.20,"unidad","🍑","Dulce y suave"],
+      [20,"Ciruela","Frutas",0.85,"unidad","🟣","Dulce y jugosa"],
+      [21,"Cereza","Frutas",5.50,"libra","🍒","Dulce y especial"],
+      [22,"Maracuyá","Frutas",0.75,"unidad","🟡","Para jugos naturales"],
+      [23,"Guayaba","Frutas",1.25,"libra","🟢","Aromática y fresca"],
+      [24,"Pitahaya","Frutas",2.75,"unidad","🐉","Fruta del dragón"],
+      [25,"Lichi","Frutas",4.00,"libra","🔴","Dulce y exótico"],
+      [26,"Toronja","Frutas",1.10,"unidad","🍊","Cítrica y fresca"],
+      [27,"Tomate","Verduras",1.25,"libra","🍅","Fresco para ensaladas y salsas"],
+      [28,"Tomate cherry","Verduras",2.50,"paquete","🍅","Pequeño y dulce"],
+      [29,"Lechuga","Verduras",1.50,"unidad","🥬","Crujiente y fresca"],
+      [30,"Espinaca","Verduras",2.00,"bolsa","🥬","Fresca y nutritiva"],
+      [31,"Zanahoria","Verduras",1.00,"libra","🥕","Fresca y dulce"],
+      [32,"Cebolla blanca","Verduras",0.95,"libra","🧅","Básica para cocinar"],
+      [33,"Cebolla morada","Verduras",1.20,"libra","🧅","Ideal para ensaladas"],
+      [34,"Cebollín","Verduras",0.75,"manojo","🌱","Fresco y aromático"],
+      [35,"Ajo","Verduras",0.50,"cabeza","🧄","Para sazonar"],
+      [36,"Papa","Tubérculos",0.85,"libra","🥔","Para cocinar, freír o hervir"],
+      [37,"Papín","Tubérculos",1.20,"libra","🥔","Papa pequeña seleccionada"],
+      [38,"Papa dulce","Tubérculos",1.10,"libra","🍠","Dulce y nutritiva"],
+      [39,"Yuca","Tubérculos",0.90,"libra","🤎","Fresca para hervir o freír"],
+      [40,"Ñame","Tubérculos",1.25,"libra","🤎","Ideal para sopas"],
+      [41,"Remolacha","Verduras",1.20,"libra","🟣","Color y sabor natural"],
+      [42,"Rábano","Verduras",1.00,"manojo","🔴","Crujiente y fresco"],
+      [43,"Pepino","Verduras",0.75,"unidad","🥒","Refrescante para ensaladas"],
+      [44,"Brócoli","Verduras",2.25,"unidad","🥦","Fresco y verde"],
+      [45,"Coliflor","Verduras",2.50,"unidad","⚪","Ideal para cocinar"],
+      [46,"Repollo verde","Verduras",1.50,"unidad","🥬","Fresco y rendidor"],
+      [47,"Repollo morado","Verduras",1.75,"unidad","🟣","Color para ensaladas"],
+      [48,"Pimentón rojo","Verduras",1.20,"unidad","🫑","Dulce y fresco"],
+      [49,"Pimentón verde","Verduras",1.10,"unidad","🫑","Fresco para cocinar"],
+      [50,"Pimentón amarillo","Verduras",1.30,"unidad","🫑","Color y sabor"],
+      [51,"Habanero","Verduras",1.75,"bolsa","🌶️","Picante y fresco"],
+      [52,"Berenjena","Verduras",1.25,"unidad","🍆","Fresca para cocinar"],
+      [53,"Zucchini","Verduras",1.00,"unidad","🥒","Verde y fresco"],
+      [54,"Zapallo","Verduras",1.00,"libra","🎃","Ideal para sopas"],
+      [55,"Apio","Verduras",1.75,"manojo","🌿","Aromático y fresco"],
+      [56,"Cilantro","Hierbas",0.50,"manojo","🌿","Fresco y aromático"],
+      [57,"Perejil","Hierbas",0.50,"manojo","🌿","Para cocinar y decorar"],
+      [58,"Jengibre","Tubérculos",1.50,"libra","🫚","Para té, jugos y comidas"]
+    ];
+
+    const defaultProducts = productData.map(([id, name, category, price, unit, emoji, description]) => ({
+      id, name, category, price, unit, emoji,
+      photo: `${IMAGE_FOLDER}${id}${IMAGE_EXTENSION}`,
+      description,
+      visible: true,
+      available: true
+    }));
+
+    let products = [];
+    let settings = { ...defaultSettings };
+    let cart = JSON.parse(localStorage.getItem("freskoCart") || "[]");
+    let currentCategory = "Todos";
+    let adminUser = null;
+
+    const $ = id => document.getElementById(id);
+    const setText = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+    const setValue = (id, value) => { const el = $(id); if (el) el.value = value ?? ""; };
+    const getValue = id => { const el = $(id); return el ? el.value : ""; };
+    const show = id => { const el = $(id); if (el) el.classList.remove("hide"); };
+    const hide = id => { const el = $(id); if (el) el.classList.add("hide"); };
+    const formatMoney = value => "$" + Number(value || 0).toFixed(2);
+    const escapeHTML = value => String(value ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+
+    function saveCart() {
+      localStorage.setItem("freskoCart", JSON.stringify(cart));
+    }
+
+    function getVisibleProducts() {
+      return products.filter(product => product.visible !== false);
+    }
+
+    function getCartItem(productId) {
+      return cart.find(item => item.id === productId);
+    }
+
+    function getProductQty(productId) {
+      const item = getCartItem(productId);
+      return item ? Number(item.quantity || 0) : 0;
+    }
+
+    function getCartTotal() {
+      return cart.reduce((total, item) => total + Number(item.price || 0) * Number(item.quantity || 0), 0);
+    }
+
+    function getCartCount() {
+      return cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
+    }
+
+    function renderImage(product) {
+      const emoji = escapeHTML(product.emoji || "🛒");
+      if (!product.photo) return `<span class="product-emoji">${emoji}</span>`;
+      return `<img src="${escapeHTML(product.photo)}" alt="${escapeHTML(product.name)}" onerror="this.outerHTML='<span class=&quot;product-emoji&quot;>${emoji}</span>'">`;
+    }
+
+    function renderThumb(product) {
+      const emoji = escapeHTML(product.emoji || "🛒");
+      if (!product.photo) return emoji;
+      return `<img src="${escapeHTML(product.photo)}" alt="${escapeHTML(product.name)}" onerror="this.outerHTML='<span>${emoji}</span>'">`;
+    }
+
+    function applyStoreSettings() {
+      setText("storeTitle", settings.name);
+      setText("storeSubtitle", settings.subtitle);
+      setText("storeNameText", settings.name);
+      setText("storeHoursText", settings.hours);
+      setText("storeDeliveryText", settings.delivery);
+      setText("storeMinimumText", formatMoney(settings.minimumOrder));
+      setText("storeOpenText", settings.isOpen === false ? "Cerrada" : "Abierta");
+      settings.isOpen === false ? show("closedNotice") : hide("closedNotice");
+
+      setValue("adminStoreName", settings.name);
+      setValue("adminStoreSubtitle", settings.subtitle);
+      setValue("adminStoreHours", settings.hours);
+      setValue("adminStoreDelivery", settings.delivery);
+      setValue("adminDeliveryFee", Number(settings.deliveryFee || 0));
+      setValue("adminMinimumOrder", Number(settings.minimumOrder || 0));
+      setValue("adminStoreOpen", String(settings.isOpen !== false));
+    }
+
+    function syncCartWithProducts() {
+      cart = cart.map(cartItem => {
+        const latest = products.find(product => product.id === cartItem.id);
+        return latest ? { ...latest, quantity: cartItem.quantity } : cartItem;
+      });
+      saveCart();
+    }
+
+    function renderCategories() {
+      const categoriesEl = $("categories");
+      if (!categoriesEl) return;
+      const categories = ["Todos", ...new Set(getVisibleProducts().map(product => product.category))];
+      if (!categories.includes(currentCategory)) currentCategory = "Todos";
+
+      categoriesEl.innerHTML = categories.map(category => `
+        <button class="category-btn ${category === currentCategory ? "active" : ""}" type="button" data-category="${escapeHTML(category)}">
+          ${escapeHTML(category)}
+        </button>
+      `).join("");
+
+      categoriesEl.querySelectorAll("[data-category]").forEach(button => {
+        button.addEventListener("click", () => {
+          currentCategory = button.dataset.category || "Todos";
+          renderCategories();
+          renderProducts();
+        });
+      });
+    }
+
+    function productButtonHTML(product) {
+      if (product.available === false) return `<button class="add-btn" type="button" disabled>Agotado</button>`;
+      const qty = getProductQty(product.id);
+      if (qty > 0) {
+        return `
+          <div class="card-qty-controls">
+            <button type="button" data-dec="${product.id}">−</button>
+            <strong>${qty} en carrito</strong>
+            <button type="button" data-inc="${product.id}">+</button>
+          </div>
+        `;
+      }
+      return `<button class="add-btn" type="button" data-add="${product.id}">Agregar al carrito</button>`;
+    }
+
+    function renderProducts() {
+      const grid = $("productsGrid");
+      const resultCount = $("resultCount");
+      if (!grid || !resultCount) return;
+
+      const search = getValue("searchInput").toLowerCase().trim();
+      let list = getVisibleProducts();
+
+      if (currentCategory !== "Todos") list = list.filter(product => product.category === currentCategory);
+      if (search) {
+        list = list.filter(product => `${product.name} ${product.category} ${product.description} ${product.unit}`.toLowerCase().includes(search));
+      }
+
+      resultCount.textContent = `${list.length} productos`;
+
+      if (!products.length) {
+        grid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">No hay productos todavía. Entra a Admin y toca “Cargar catálogo inicial”.</div>`;
+        return;
+      }
+
+      if (!list.length) {
+        grid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">No encontramos productos.</div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(product => `
+        <article class="product-card ${product.available === false ? "sold-out" : ""}">
+          <div>
+            <div class="product-img-wrap">${renderImage(product)}</div>
+            ${product.available === false ? '<p class="sold-out-label">Agotado</p>' : ''}
+            <h3>${escapeHTML(product.name)}</h3>
+            <p>${escapeHTML(product.description || "Producto fresco seleccionado")}</p>
+            <p>Por ${escapeHTML(product.unit)}</p>
+            <div class="price">${formatMoney(product.price)}</div>
+          </div>
+          ${productButtonHTML(product)}
+        </article>
+      `).join("");
+
+      grid.querySelectorAll("[data-add]").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.add))));
+      grid.querySelectorAll("[data-inc]").forEach(btn => btn.addEventListener("click", () => increaseQuantity(Number(btn.dataset.inc))));
+      grid.querySelectorAll("[data-dec]").forEach(btn => btn.addEventListener("click", () => decreaseQuantity(Number(btn.dataset.dec))));
+    }
+
+    function addToCart(productId) {
+      const product = products.find(item => item.id === productId && item.visible !== false && item.available !== false);
+      if (!product) return;
+      const item = cart.find(row => row.id === productId);
+      if (item) item.quantity += 1;
+      else cart.push({ ...product, quantity: 1 });
+      saveCart();
+      renderCart();
+      renderProducts();
+    }
+
+    function increaseQuantity(productId) {
+      const item = cart.find(row => row.id === productId);
+      if (item) item.quantity += 1;
+      saveCart();
+      renderCart();
+      renderProducts();
+    }
+
+    function decreaseQuantity(productId) {
+      const item = cart.find(row => row.id === productId);
+      if (!item) return;
+      item.quantity -= 1;
+      if (item.quantity <= 0) cart = cart.filter(row => row.id !== productId);
+      saveCart();
+      renderCart();
+      renderProducts();
+    }
+
+    function removeFromCart(productId) {
+      cart = cart.filter(row => row.id !== productId);
+      saveCart();
+      renderCart();
+      renderProducts();
+    }
+
+    function clearCart() {
+      if (!cart.length) return;
+      if (!confirm("¿Seguro que quieres vaciar el carrito?")) return;
+      cart = [];
+      saveCart();
+      renderCart();
+      renderProducts();
+    }
+
+    function renderCart() {
+      const el = $("cartItems");
+      if (!el) return;
+
+      if (!cart.length) {
+        el.innerHTML = `<div class="cart-empty">Tu carrito está vacío.</div>`;
+      } else {
+        el.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <div>
+              <h4>${escapeHTML(item.emoji || "🛒")} ${escapeHTML(item.name)}</h4>
+              <small>${formatMoney(item.price)} por ${escapeHTML(item.unit)}</small>
+              <div class="quantity-controls">
+                <button class="qty-btn" type="button" data-dec-cart="${item.id}">−</button>
+                <strong>${item.quantity}</strong>
+                <button class="qty-btn" type="button" data-inc-cart="${item.id}">+</button>
+              </div>
+              <button class="remove-btn" type="button" data-remove="${item.id}">Eliminar</button>
+            </div>
+            <strong>${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}</strong>
+          </div>
+        `).join("");
+
+        el.querySelectorAll("[data-inc-cart]").forEach(btn => btn.addEventListener("click", () => increaseQuantity(Number(btn.dataset.incCart))));
+        el.querySelectorAll("[data-dec-cart]").forEach(btn => btn.addEventListener("click", () => decreaseQuantity(Number(btn.dataset.decCart))));
+        el.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => removeFromCart(Number(btn.dataset.remove))));
+      }
+
+      setText("cartTotal", formatMoney(getCartTotal()));
+      setText("floatingCount", String(getCartCount()));
+      setText("floatingTotal", formatMoney(getCartTotal()));
+    }
+
+    function finalizeOrder() {
+      if (!cart.length) return alert("Tu carrito está vacío. Agrega productos antes de finalizar el pedido.");
+      if (settings.isOpen === false && !confirm("La tienda está cerrada. ¿Quieres enviar el pedido para que lo revisen después?")) return;
+
+      const minimumOrder = Number(settings.minimumOrder || 0);
+      if (minimumOrder > 0 && getCartTotal() < minimumOrder) {
+        return alert(`El pedido mínimo es ${formatMoney(minimumOrder)}. Te faltan ${formatMoney(minimumOrder - getCartTotal())}.`);
+      }
+
+      const unavailable = cart.filter(item => item.available === false);
+      if (unavailable.length) {
+        return alert(`Hay productos agotados en tu carrito: ${unavailable.map(item => item.name).join(", ")}.`);
+      }
+
+      const name = getValue("customerName").trim();
+      const address = getValue("customerAddress").trim();
+      const payment = getValue("customerPayment").trim();
+      const notes = getValue("customerNotes").trim();
+      const subtotal = getCartTotal();
+      const deliveryFee = Number(settings.deliveryFee || 0);
+      const total = subtotal + deliveryFee;
+      const orderLines = cart.map(item => `- ${item.name} x ${item.quantity} ${item.unit} — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}`).join("\n");
+      const deliveryLine = deliveryFee > 0 ? `Delivery: ${formatMoney(deliveryFee)}` : "Delivery: A confirmar";
+      const closedLine = settings.isOpen === false ? "\nNota: Pedido enviado con la tienda cerrada." : "";
+      const message = `Hola, quiero hacer este pedido:\n\nPedido:\n${orderLines}\n\nSubtotal: ${formatMoney(subtotal)}\n${deliveryLine}\nTotal: ${formatMoney(total)}${closedLine}\n\nNombre: ${name}\nDirección: ${address}\nForma de pago: ${payment}\nNotas: ${notes}\n\nPor favor confirmar disponibilidad.`;
+
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
+    }
+
+    async function seedInitialCatalog() {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+      if (!confirm("¿Cargar/restaurar el catálogo inicial de 58 productos en Firebase?")) return;
+
+      const batch = writeBatch(db);
+      defaultProducts.forEach(product => {
+        batch.set(doc(db, "products", String(product.id)), product);
+      });
+      batch.set(doc(db, "settings", "store"), defaultSettings, { merge: true });
+      await batch.commit();
+
+      alert("Catálogo inicial cargado en Firebase.");
+    }
+
+    async function saveStoreSettings() {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+      const newSettings = {
+        name: getValue("adminStoreName").trim() || defaultSettings.name,
+        subtitle: getValue("adminStoreSubtitle").trim() || defaultSettings.subtitle,
+        hours: getValue("adminStoreHours").trim() || defaultSettings.hours,
+        delivery: getValue("adminStoreDelivery").trim() || defaultSettings.delivery,
+        deliveryFee: Number(getValue("adminDeliveryFee")) || 0,
+        minimumOrder: Number(getValue("adminMinimumOrder")) || 0,
+        isOpen: getValue("adminStoreOpen") !== "false"
+      };
+      await setDoc(doc(db, "settings", "store"), newSettings, { merge: true });
+      alert("Datos de tienda guardados.");
+    }
+
+    function renderAdminList() {
+      const list = $("adminList");
+      const count = $("adminCount");
+      if (!list || !count) return;
+
+      const search = getValue("adminSearch").toLowerCase().trim();
+      let rows = [...products];
+      if (search) rows = rows.filter(product => `${product.name} ${product.category} ${product.description} ${product.unit}`.toLowerCase().includes(search));
+
+      count.textContent = `${rows.length} productos`;
+
+      if (!rows.length) {
+        list.innerHTML = `<div class="cart-empty">No hay productos en Firebase todavía.</div>`;
+        return;
+      }
+
+      list.innerHTML = rows.map(product => `
+        <div class="admin-item">
+          <div class="admin-thumb">${renderThumb(product)}</div>
+          <div>
+            <h4>${escapeHTML(product.name)}
+              ${product.visible === false ? '<span class="hidden-badge">OCULTO</span>' : ''}
+              ${product.available === false ? '<span class="hidden-badge">AGOTADO</span>' : ''}
+            </h4>
+            <p>${escapeHTML(product.category)} • ${formatMoney(product.price)} por ${escapeHTML(product.unit)}<br>${escapeHTML(product.description || "")}<br><strong>Foto:</strong> ${escapeHTML(product.photo || "Sin foto")}</p>
+            <div class="admin-actions" style="margin:0;">
+              <button type="button" class="admin-btn" data-edit="${product.id}">Editar</button>
+              <button type="button" class="admin-btn warning" data-visible="${product.id}">${product.visible === false ? "Mostrar" : "Esconder"}</button>
+              <button type="button" class="admin-btn gray" data-available="${product.id}">${product.available === false ? "Disponible" : "Agotado"}</button>
+              <button type="button" class="admin-btn danger" data-delete="${product.id}">Borrar</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => editProduct(Number(btn.dataset.edit))));
+      list.querySelectorAll("[data-visible]").forEach(btn => btn.addEventListener("click", () => toggleProductVisibility(Number(btn.dataset.visible))));
+      list.querySelectorAll("[data-available]").forEach(btn => btn.addEventListener("click", () => toggleProductAvailability(Number(btn.dataset.available))));
+      list.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteProductFirebase(Number(btn.dataset.delete))));
+    }
+
+    function editProduct(id) {
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+
+      setValue("editingProductId", product.id);
+      setValue("productName", product.name);
+      setValue("productCategory", product.category);
+      setValue("productPrice", product.price);
+      setValue("productUnit", product.unit);
+      setValue("productEmoji", product.emoji || "");
+      setValue("productPhoto", product.photo || "");
+      setValue("productDescription", product.description || "");
+      setValue("productVisible", String(product.visible !== false));
+      setValue("productAvailable", String(product.available !== false));
+
+      show("editingStatus");
+      setText("editingStatus", `Editando: ${product.name}`);
+      $("adminEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function clearProductForm() {
+      setValue("editingProductId", "");
+      setValue("productName", "");
+      setValue("productCategory", "Frutas");
+      setValue("productPrice", "");
+      setValue("productUnit", "");
+      setValue("productEmoji", "");
+      setValue("productPhoto", "");
+      setValue("productDescription", "");
+      setValue("productVisible", "true");
+      setValue("productAvailable", "true");
+      hide("editingStatus");
+    }
+
+    async function saveProduct() {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+
+      const idValue = getValue("editingProductId");
+      const id = idValue ? Number(idValue) : (products.length ? Math.max(...products.map(p => Number(p.id))) + 1 : 1);
+
+      const product = {
+        id,
+        name: getValue("productName").trim(),
+        category: getValue("productCategory").trim(),
+        price: Number(getValue("productPrice")),
+        unit: getValue("productUnit").trim(),
+        emoji: getValue("productEmoji").trim() || "🛒",
+        photo: getValue("productPhoto").trim() || `${id}.png`,
+        description: getValue("productDescription").trim() || "Producto fresco seleccionado",
+        visible: getValue("productVisible") !== "false",
+        available: getValue("productAvailable") !== "false"
+      };
+
+      if (!product.name || !product.category || !product.unit || Number.isNaN(product.price)) {
+        return alert("Llena nombre, categoría, precio y unidad.");
+      }
+
+      await setDoc(doc(db, "products", String(id)), product, { merge: true });
+      clearProductForm();
+      alert("Producto guardado en Firebase.");
+    }
+
+    async function toggleProductVisibility(id) {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      await setDoc(doc(db, "products", String(id)), { visible: product.visible === false }, { merge: true });
+    }
+
+    async function toggleProductAvailability(id) {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      await setDoc(doc(db, "products", String(id)), { available: product.available === false }, { merge: true });
+    }
+
+    async function deleteProductFirebase(id) {
+      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      if (!confirm(`¿Borrar ${product.name}?`)) return;
+      await deleteDoc(doc(db, "products", String(id)));
+    }
+
+    function updateAdminUI(user) {
+      adminUser = user && user.uid === ADMIN_UID ? user : null;
+
+      if (adminUser) {
+        hide("loginBox");
+        show("adminContent");
+      } else {
+        show("loginBox");
+        hide("adminContent");
+      }
+    }
+
+    async function loginAdmin() {
+      try {
+        const email = getValue("adminEmail").trim();
+        const password = getValue("adminPassword");
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert("No se pudo entrar. Revisa email/contraseña.");
+        console.error(error);
+      }
+    }
+
+    async function logoutAdmin() {
+      await signOut(auth);
+      updateAdminUI(null);
+    }
+
+    function showAdminPanel() {
+      show("adminPanel");
+      $("adminPanel").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function closeAdminPanel() {
+      hide("adminPanel");
+    }
+
+    function listenToFirestore() {
+      onSnapshot(doc(db, "settings", "store"), snapshot => {
+        settings = snapshot.exists() ? { ...defaultSettings, ...snapshot.data() } : { ...defaultSettings };
+        applyStoreSettings();
+      }, error => {
+        console.error("Error settings:", error);
+      });
+
+      const productsQuery = query(collection(db, "products"), orderBy("id", "asc"));
+      onSnapshot(productsQuery, snapshot => {
+        products = snapshot.docs.map(document => ({ id: Number(document.id), ...document.data() }))
+          .sort((a, b) => Number(a.id) - Number(b.id));
+
+        syncCartWithProducts();
+        renderCategories();
+        renderProducts();
+        renderCart();
+        renderAdminList();
+      }, error => {
+        console.error("Error products:", error);
+        $("productsGrid").innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">Error cargando productos. Revisa Firebase Rules.</div>`;
+      });
+    }
+
+    function attachEvents() {
+      $("adminTopBtn").addEventListener("click", showAdminPanel);
+      $("closeAdminBtn").addEventListener("click", closeAdminPanel);
+      $("loginBtn").addEventListener("click", loginAdmin);
+      $("logoutBtn").addEventListener("click", logoutAdmin);
+      $("seedBtn").addEventListener("click", seedInitialCatalog);
+      $("saveSettingsBtn").addEventListener("click", saveStoreSettings);
+      $("saveProductBtn").addEventListener("click", saveProduct);
+      $("clearProductFormBtn").addEventListener("click", clearProductForm);
+      $("whatsappBtn").addEventListener("click", finalizeOrder);
+      $("clearCartBtn").addEventListener("click", clearCart);
+      $("floatingCart").addEventListener("click", () => $("cartSection").scrollIntoView({ behavior: "smooth" }));
+      $("searchInput").addEventListener("input", renderProducts);
+      $("adminSearch").addEventListener("input", renderAdminList);
+      $("adminPassword").addEventListener("keydown", event => {
+        if (event.key === "Enter") loginAdmin();
+      });
+    }
+
+    function init() {
+      attachEvents();
+      applyStoreSettings();
+      renderCart();
+      listenToFirestore();
+      onAuthStateChanged(auth, user => updateAdminUI(user));
+      console.log("Fresko Firebase app loaded. Products expected after seeding:", defaultProducts.length);
+    }
+
+    init();
+  </script>
+</body>
+</html>
     label { font-size:13px; color:#475569; font-weight:bold; margin-bottom:5px; display:block; }
     .form-field.full { grid-column:1 / -1; }
     .whatsapp-btn { width:100%; margin-top:16px; background:#25d366; color:white; border:none; padding:16px; border-radius:16px; font-size:18px; font-weight:bold; cursor:pointer; box-shadow:0 6px 18px rgba(37,211,102,.35); }
