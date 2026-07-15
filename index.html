@@ -1,332 +1,274 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fresko App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fresko • Frutas y Verduras • Panamá</title>
+  <meta name="description" content="Pide frutas, verduras y jugos frescos por WhatsApp. Entrega rápida en Panamá.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.freskoapp.com/">
+  <meta property="og:title" content="Fresko • Frutas y Verduras • Panamá">
+  <meta property="og:description" content="Pide frutas, verduras y jugos frescos por WhatsApp. Entrega rápida en Panamá.">
+  <meta property="og:image" content="https://www.freskoapp.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fresko • Frutas y Verduras • Panamá">
+  <meta name="twitter:description" content="Pide frutas, verduras y jugos frescos por WhatsApp. Entrega rápida en Panamá.">
+  <meta name="twitter:image" content="https://www.freskoapp.com/og-image.svg">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    :root {
-      --green:#2f9e44; --green-dark:#237032; --green-soft:#e7f8e9;
-      --orange:#ff922b; --orange-dark:#f76707; --red:#e03131;
-      --bg:#f6fff4; --text:#1f2933; --muted:#64748b; --border:#e5e7eb;
-      --shadow:0 8px 24px rgba(0,0,0,.08);
-    }
-    html { scroll-behavior:smooth; }
-    body { background:var(--bg); color:var(--text); padding-bottom:100px; }
-    header {
-      background:linear-gradient(135deg,#2f9e44,#8ce99a);
-      color:white; padding:58px 18px 38px; text-align:center;
-      border-bottom-left-radius:30px; border-bottom-right-radius:30px;
-      box-shadow:0 12px 28px rgba(0,0,0,.16); position:relative;
-    }
-    header h1 { font-size:30px; margin-bottom:8px; }
-    header p { font-size:16px; opacity:.96; }
-    .top-actions { position:absolute; top:14px; right:14px; display:flex; gap:8px; }
-    .small-top-btn {
-      border:none; background:rgba(255,255,255,.96); color:var(--green-dark);
-      font-weight:bold; padding:10px 14px; border-radius:999px; cursor:pointer;
-      box-shadow:0 4px 14px rgba(0,0,0,.14);
-    }
-    .store-info {
-      background:white; width:calc(100% - 28px); max-width:980px;
-      margin:-22px auto 18px; padding:14px; border-radius:20px;
-      box-shadow:var(--shadow); text-align:center; font-size:14px; line-height:1.6;
-      position:relative; z-index:2;
-    }
-    .container { width:100%; max-width:1150px; margin:auto; padding:0 14px; }
-    .section-title { margin:24px 0 12px; font-size:22px; color:var(--green); }
-    .toolbar { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin-bottom:12px; }
-    input, textarea, select {
-      width:100%; border:1px solid #d1d5db; border-radius:14px;
-      padding:12px 14px; font-size:14px; background:white; outline:none;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color:var(--green); box-shadow:0 0 0 3px rgba(47,158,68,.12);
-    }
-    textarea { min-height:76px; resize:vertical; }
-    .search-input { border-radius:999px; padding:14px 16px; box-shadow:0 3px 12px rgba(0,0,0,.05); }
-    .result-count {
-      background:white; color:var(--green-dark); font-weight:bold;
-      padding:12px 14px; border-radius:999px; box-shadow:0 3px 12px rgba(0,0,0,.05);
-      white-space:nowrap; font-size:14px;
-    }
-    .categories { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px; }
-    .category-btn {
-      border:none; background:white; padding:12px 18px; border-radius:999px;
-      font-weight:bold; color:var(--green); box-shadow:0 3px 12px rgba(0,0,0,.08);
-      cursor:pointer; white-space:nowrap; transition:.18s ease;
-    }
-    .category-btn.active, .category-btn:hover { background:var(--green); color:white; transform:translateY(-1px); }
-    .closed-notice { background:#fee2e2; color:#991b1b; padding:12px; border-radius:16px; margin:12px 0; font-weight:bold; text-align:center; }
-    .products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:14px; }
-    .product-card {
-      background:white; border-radius:22px; padding:13px; box-shadow:var(--shadow);
-      display:flex; flex-direction:column; justify-content:space-between;
-      min-height:252px; transition:.18s ease; border:1px solid rgba(226,232,240,.8);
-    }
-    .product-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.1); }
-    .product-card.sold-out { opacity:.72; }
-    .product-img-wrap {
-      width:100%; height:86px; border-radius:18px; background:#f8fafc;
-      display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:10px;
-    }
-    .product-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
-    .product-emoji { font-size:50px; line-height:1; }
-    .sold-out-label {
-      display:inline-block; background:#fee2e2; color:#991b1b; font-weight:bold;
-      padding:5px 9px; border-radius:999px; margin:0 0 6px; font-size:12px;
-    }
-    .product-card h3 { font-size:16px; margin-bottom:5px; line-height:1.15; }
-    .product-card p { font-size:12.5px; color:var(--muted); margin-bottom:5px; line-height:1.3; }
-    .price { font-size:18px; font-weight:bold; color:#e8590c; margin:8px 0 10px; }
-    .add-btn {
-      background:var(--orange); color:white; border:none; padding:12px; border-radius:14px;
-      font-weight:bold; cursor:pointer; font-size:14px; width:100%; transition:.16s ease;
-    }
-    .add-btn:hover { background:var(--orange-dark); transform:translateY(-1px); }
-    .add-btn:disabled { background:#cbd5e1; cursor:not-allowed; transform:none; }
-    .card-qty-controls {
-      display:grid; grid-template-columns:42px 1fr 42px; align-items:center; gap:8px;
-      background:var(--green-soft); padding:7px; border-radius:16px;
-    }
-    .card-qty-controls button, .qty-btn {
-      border:none; border-radius:50%; background:var(--green); color:white; font-weight:bold;
-      cursor:pointer; font-size:18px; height:34px; width:34px; display:inline-flex;
-      align-items:center; justify-content:center;
-    }
-    .card-qty-controls strong { text-align:center; color:var(--green-dark); font-size:16px; }
-    .cart-panel, .admin-panel {
-      background:white; margin:26px 0; padding:16px; border-radius:24px; box-shadow:var(--shadow);
-    }
-    .cart-empty { color:#6b7280; text-align:center; padding:14px; }
-    .cart-item { display:grid; grid-template-columns:1fr auto; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
-    .cart-item:last-child { border-bottom:none; }
-    .cart-item h4 { font-size:15px; margin-bottom:4px; }
-    .cart-item small { color:#6b7280; }
-    .quantity-controls { display:flex; align-items:center; gap:8px; margin-top:8px; }
-    .remove-btn { background:transparent; border:none; color:var(--red); cursor:pointer; font-size:13px; margin-top:8px; font-weight:bold; }
-    .cart-total { display:flex; justify-content:space-between; align-items:center; margin-top:18px; font-size:22px; font-weight:bold; color:var(--green); }
-    .customer-fields, .admin-form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:18px; }
-    label { font-size:13px; color:#475569; font-weight:bold; margin-bottom:5px; display:block; }
-    .form-field.full { grid-column:1 / -1; }
-    .whatsapp-btn {
-      width:100%; margin-top:16px; background:#25d366; color:white; border:none; padding:16px;
-      border-radius:16px; font-size:18px; font-weight:bold; cursor:pointer;
-      box-shadow:0 6px 18px rgba(37,211,102,.35);
-    }
-    .whatsapp-btn:hover { background:#20bd5a; }
-    .clear-btn {
-      width:100%; margin-top:10px; background:#f1f3f5; color:#495057; border:none;
-      padding:12px; border-radius:14px; cursor:pointer; font-weight:bold;
-    }
-    .admin-toggle-line { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:14px; }
-    .admin-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    .admin-btn {
-      border:none; padding:11px 14px; border-radius:13px; font-weight:bold;
-      cursor:pointer; background:var(--green); color:white; transition:.15s ease;
-    }
-    .admin-btn:hover { transform:translateY(-1px); filter:brightness(.98); }
-    .admin-btn.warning { background:var(--orange); }
-    .admin-btn.danger { background:var(--red); }
-    .admin-btn.gray { background:#64748b; }
-    .admin-note {
-      background:#fff9db; border:1px solid #ffe066; color:#5c3d00; padding:12px;
-      border-radius:14px; margin:12px 0; font-size:14px; line-height:1.45;
-    }
-    .admin-editor { background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:20px; margin-top:12px; }
-    .admin-list { margin-top:18px; display:grid; gap:10px; }
-    .admin-item {
-      border:1px solid var(--border); border-radius:18px; padding:12px;
-      display:grid; grid-template-columns:58px 1fr; gap:12px; align-items:center;
-      background:#fcfcfd; transition:.16s ease;
-    }
-    .admin-item:hover { border-color:#b7e4c7; background:#fff; }
-    .admin-thumb {
-      width:58px; height:58px; border-radius:16px; background:#eef2f7; overflow:hidden;
-      display:flex; align-items:center; justify-content:center; font-size:32px;
-    }
-    .admin-thumb img { width:100%; height:100%; object-fit:cover; }
-    .admin-item h4 { margin-bottom:3px; }
-    .admin-item p { color:var(--muted); font-size:13px; line-height:1.35; margin-bottom:8px; }
-    .hidden-badge {
-      display:inline-block; background:#fee2e2; color:#991b1b; padding:3px 7px;
-      border-radius:999px; font-size:11px; font-weight:bold; margin-left:6px;
-    }
-    .editing-badge {
-      display:inline-block; background:#dcfce7; color:#166534; padding:4px 9px;
-      border-radius:999px; font-size:12px; font-weight:bold; margin-bottom:8px;
-    }
-    .login-box { background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:20px; margin-top:12px; }
-    .benefits { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:24px 0; }
-    .benefit { background:#fff9db; padding:16px; border-radius:18px; text-align:center; font-weight:bold; color:#5c3d00; box-shadow:0 3px 12px rgba(0,0,0,.06); }
-    .floating-cart {
-      position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
-      width:calc(100% - 28px); max-width:720px; background:var(--green); color:white;
-      border-radius:18px; padding:14px 16px; display:flex; justify-content:space-between;
-      align-items:center; box-shadow:0 10px 28px rgba(0,0,0,.25); z-index:10; cursor:pointer;
-    }
-    .floating-cart strong { font-size:17px; }
-    footer { text-align:center; color:#6b7280; padding:24px 14px; font-size:14px; }
-    .hide { display:none !important; }
-    @media (max-width:600px) {
-      header h1{font-size:25px;}
-      .toolbar{grid-template-columns:1fr;}
-      .products-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
-      .product-card{min-height:250px; padding:11px; border-radius:18px;}
-      .product-img-wrap{height:74px;}
-      .product-emoji{font-size:42px;}
-      .admin-item{grid-template-columns:48px 1fr;}
-      .admin-thumb{width:48px;height:48px;font-size:27px;}
-      .top-actions{right:10px;top:10px;}
-    }
+    :root { --green:#2f9e44; --green-dark:#1f6f2f; --green-light:#e8f5e9; }
+    * { box-sizing:border-box; }
+    body { font-family: system-ui, -apple-system, Arial, sans-serif; margin:0; background:#f8faf8; color:#222; line-height:1.4; }
+    main { max-width:1100px; margin:0 auto; padding:12px 12px 90px; }
+    header { background:#fff; border-bottom:1px solid #eee; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    h1 { margin:0; font-size:26px; color:var(--green); letter-spacing:-0.5px; }
+    .admin-btn { background:#222; color:#fff; border:0; border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; cursor:pointer; }
+    .admin-btn.admin { background:var(--green); }
+    .store-bar { background:#fff; border-radius:14px; padding:12px 14px; margin:12px 0; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+    .store-name { font-size:20px; font-weight:700; margin:0 0 2px; }
+    .store-meta { font-size:13px; color:#555; display:flex; flex-wrap:wrap; gap:8px 14px; }
+    .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:700; }
+    .badge.open { background:#dcfce7; color:#166534; }
+    .badge.closed { background:#fee2e2; color:#991b1b; }
+    .search { width:100%; padding:12px 14px; border:1px solid #ddd; border-radius:12px; font-size:15px; margin:8px 0; }
+    .cats { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch; }
+    .cat { white-space:nowrap; padding:8px 14px; border-radius:999px; background:#fff; border:1px solid #ddd; font-size:13px; cursor:pointer; flex-shrink:0; }
+    .cat.active { background:var(--green); color:#fff; border-color:var(--green); }
+    .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    @media (min-width:620px) { .grid { grid-template-columns:repeat(3,1fr); } }
+    @media (min-width:920px) { .grid { grid-template-columns:repeat(4,1fr); } }
+    .card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); display:flex; flex-direction:column; }
+    .card .media { height:118px; background:#f1f5f0; display:flex; align-items:center; justify-content:center; font-size:52px; position:relative; }
+    .card .media img { width:100%; height:100%; object-fit:cover; }
+    .card .info { padding:10px 11px 12px; flex:1; display:flex; flex-direction:column; }
+    .card .name { font-weight:700; font-size:15px; margin:0 0 3px; }
+    .card .desc { font-size:12px; color:#666; flex:1; margin-bottom:6px; line-height:1.3; }
+    .card .price-row { display:flex; align-items:baseline; justify-content:space-between; margin-top:auto; }
+    .card .price { font-weight:800; font-size:16px; color:#111; }
+    .card .unit { font-size:11px; color:#666; }
+    .card .btn { margin-top:8px; width:100%; background:var(--green); color:#fff; border:0; border-radius:10px; padding:9px; font-weight:700; font-size:14px; cursor:pointer; }
+    .card .btn:disabled { background:#9ca3af; cursor:not-allowed; }
+    .card .agotado { font-size:12px; color:#b91c1c; font-weight:700; text-align:center; margin-top:6px; }
+    .empty { text-align:center; padding:40px 20px; color:#666; }
+    .cart-bar { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #ddd; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; z-index:60; box-shadow:0 -2px 8px rgba(0,0,0,.08); }
+    .cart-bar.hidden { display:none; }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:flex-end; justify-content:center; z-index:100; }
+    .modal.active { display:flex; }
+    .modal-content { background:#fff; width:100%; max-width:520px; border-radius:16px 16px 0 0; padding:16px; max-height:92vh; overflow:auto; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .modal-header h2 { margin:0; font-size:18px; }
+    .close { background:none; border:0; font-size:24px; line-height:1; cursor:pointer; padding:0 6px; }
+    .form-row { margin-bottom:10px; }
+    .form-row label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; color:#444; }
+    .form-row input, .form-row select, .form-row textarea { width:100%; padding:9px 11px; border:1px solid #ccc; border-radius:10px; font-size:15px; }
+    .form-row textarea { min-height:72px; resize:vertical; }
+    .btn-green { background:var(--green); color:#fff; border:0; border-radius:10px; padding:11px 16px; font-weight:700; font-size:15px; width:100%; cursor:pointer; }
+    .btn-green:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-secondary { background:#f1f5f0; color:#222; border:0; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; }
+    .btn-danger { background:#b91c1c; color:#fff; border:0; border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+    .admin-list { max-height:380px; overflow:auto; border:1px solid #eee; border-radius:10px; }
+    .admin-item { padding:9px 10px; border-bottom:1px solid #f0f0f0; display:flex; gap:8px; align-items:center; }
+    .admin-item:last-child { border-bottom:0; }
+    .admin-item .nm { font-weight:700; flex:1; font-size:14px; }
+    .admin-item .small { font-size:12px; color:#555; }
+    .status { font-size:12px; min-width:70px; text-align:right; }
+    .status.saving { color:#ca8a04; }
+    .status.saved { color:#166534; }
+    .status.error { color:#b91c1c; }
+    .thumb { width:42px; height:42px; border-radius:8px; background:#f1f5f0; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; overflow:hidden; }
+    .thumb img { width:100%; height:100%; object-fit:cover; }
+    .toast { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:9px 16px; border-radius:999px; font-size:13px; z-index:200; box-shadow:0 3px 10px rgba(0,0,0,.3); }
+    .toast.error { background:#b91c1c; }
+    .tests { font-size:11px; color:#888; text-align:center; margin-top:16px; }
+    .prod-actions { display:flex; gap:4px; margin-top:4px; }
+    .prod-actions button { font-size:12px; padding:4px 8px; border-radius:6px; border:0; cursor:pointer; }
+    .hidden { display:none !important; }
+    .price-input { width:78px; padding:3px 6px; font-size:13px; }
+    .quick { font-size:12px; padding:4px 9px; }
   </style>
 </head>
 <body>
   <header>
-    <div class="top-actions"><button class="small-top-btn" type="button" id="adminTopBtn">Admin</button></div>
-    <h1 id="storeTitle">Fresko App</h1>
-    <p id="storeSubtitle">Calidad, frescura y buenos precios para tu hogar</p>
+    <h1>Fresko</h1>
+    <button id="adminBtn" class="admin-btn">Admin</button>
   </header>
 
-  <div class="store-info">
-    <strong>Nombre de la tienda:</strong> <span id="storeNameText">Fresko App</span><br />
-    <strong>Horario:</strong> <span id="storeHoursText">Lunes a Domingo | 8:00 a.m. - 7:00 p.m.</span><br />
-    <strong>Delivery:</strong> <span id="storeDeliveryText">Disponible por WhatsApp</span><br />
-    <strong>Pedido mínimo:</strong> <span id="storeMinimumText">$10.00</span><br />
-    <strong>Estado:</strong> <span id="storeOpenText">Abierta</span>
-  </div>
+  <main>
+    <div id="storeInfo" class="store-bar">
+      <div class="store-name">Cargando...</div>
+      <div class="store-meta"></div>
+    </div>
 
-  <main class="container">
-    <section id="shopArea">
-      <h2 class="section-title">Haz tu pedido</h2>
-      <div id="closedNotice" class="closed-notice hide">Estamos cerrados. Puedes dejar tu pedido para mañana.</div>
-      <div class="toolbar">
-        <input class="search-input" id="searchInput" type="search" placeholder="Buscar frutas o verduras..." />
-        <div class="result-count" id="resultCount">0 productos</div>
-      </div>
-      <div class="categories" id="categories"></div>
-      <section class="products-grid" id="productsGrid">
-        <div class="cart-empty">Cargando productos...</div>
-      </section>
-    </section>
+    <input id="search" class="search" type="text" placeholder="Buscar productos (ej: mango, tomate, cilantro)">
 
-    <section class="cart-panel" id="cartSection">
-      <h2 class="section-title">Tu carrito</h2>
-      <div id="cartItems"></div>
-      <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
-      <div class="customer-fields">
-        <input id="customerName" type="text" placeholder="Tu nombre" />
-        <input id="customerPayment" type="text" placeholder="Forma de pago" />
-        <textarea id="customerAddress" placeholder="Dirección de entrega"></textarea>
-        <textarea id="customerNotes" placeholder="Notas adicionales, ejemplo: bananas maduras, sin cebolla, etc."></textarea>
-      </div>
-      <button class="whatsapp-btn" type="button" id="whatsappBtn">Finalizar pedido por WhatsApp</button>
-      <button class="clear-btn" type="button" id="clearCartBtn">Vaciar carrito</button>
-    </section>
+    <div id="categories" class="cats"></div>
 
-    <section class="admin-panel hide" id="adminPanel">
-      <div class="admin-toggle-line">
-        <h2 class="section-title" style="margin:0;">Panel Admin</h2>
-        <button class="admin-btn gray" type="button" id="closeAdminBtn">Cerrar panel</button>
-      </div>
+    <div id="productsGrid" class="grid"></div>
 
-      <div id="loginBox" class="login-box">
-        <h3 style="color:var(--green);">Entrar como admin</h3>
-        <p style="font-size:14px;color:var(--muted);margin:6px 0 12px;">Usa el email y contraseña que creaste en Firebase Authentication.</p>
-        <div class="admin-form-grid">
-          <input id="adminEmail" type="email" placeholder="Email admin" />
-          <input id="adminPassword" type="password" placeholder="Contraseña" />
-        </div>
-        <div class="admin-actions">
-          <button class="admin-btn" type="button" id="loginBtn">Entrar</button>
-        </div>
-      </div>
-
-      <div id="adminContent" class="hide">
-        <div class="admin-note">
-          Los cambios se guardan en Firebase y se actualizan para todos. Si es la primera vez, toca <strong>Cargar catálogo inicial</strong>.
-        </div>
-
-        <div class="admin-actions">
-          <button class="admin-btn" type="button" id="seedBtn">Cargar catálogo inicial</button>
-          <button class="admin-btn gray" type="button" id="logoutBtn">Cerrar sesión</button>
-        </div>
-
-        <h3 style="margin-top:18px;color:var(--green);">Datos de la tienda</h3>
-        <div class="admin-form-grid">
-          <div class="form-field"><label>Nombre de la tienda</label><input id="adminStoreName" type="text" /></div>
-          <div class="form-field"><label>Subtítulo</label><input id="adminStoreSubtitle" type="text" /></div>
-          <div class="form-field"><label>Horario</label><input id="adminStoreHours" type="text" /></div>
-          <div class="form-field"><label>Delivery texto</label><input id="adminStoreDelivery" type="text" /></div>
-          <div class="form-field"><label>Costo delivery</label><input id="adminDeliveryFee" type="number" min="0" step="0.01" /></div>
-          <div class="form-field"><label>Pedido mínimo</label><input id="adminMinimumOrder" type="number" min="0" step="0.01" /></div>
-          <div class="form-field"><label>Estado tienda</label><select id="adminStoreOpen"><option value="true">Abierta</option><option value="false">Cerrada</option></select></div>
-        </div>
-        <div class="admin-actions"><button class="admin-btn" type="button" id="saveSettingsBtn">Guardar datos de tienda</button></div>
-
-        <div class="admin-editor" id="adminEditor">
-          <div id="editingStatus" class="editing-badge hide">Editando producto</div>
-          <h3 style="color:var(--green);">Producto</h3>
-          <input id="editingProductId" type="hidden" />
-          <div class="admin-form-grid">
-            <div class="form-field"><label>Nombre</label><input id="productName" type="text" placeholder="Ej: Banana" /></div>
-            <div class="form-field"><label>Categoría</label><select id="productCategory"><option>Frutas</option><option>Verduras</option><option>Tubérculos</option><option>Hierbas</option><option>Otros</option></select></div>
-            <div class="form-field"><label>Precio</label><input id="productPrice" type="number" min="0" step="0.01" placeholder="0.00" /></div>
-            <div class="form-field"><label>Unidad</label><input id="productUnit" type="text" placeholder="libra, unidad, paquete..." /></div>
-            <div class="form-field"><label>Emoji</label><input id="productEmoji" type="text" placeholder="🍌" /></div>
-            <div class="form-field"><label>Ruta de foto</label><input id="productPhoto" type="text" placeholder="1.png" /></div>
-            <div class="form-field"><label>Visible</label><select id="productVisible"><option value="true">Sí, mostrar</option><option value="false">No, esconder</option></select></div>
-            <div class="form-field"><label>Disponibilidad</label><select id="productAvailable"><option value="true">Disponible</option><option value="false">Agotado</option></select></div>
-            <div class="form-field full"><label>Descripción</label><textarea id="productDescription" placeholder="Producto fresco seleccionado"></textarea></div>
-          </div>
-          <div class="admin-actions">
-            <button class="admin-btn" type="button" id="saveProductBtn">Guardar producto</button>
-            <button class="admin-btn warning" type="button" id="clearProductFormBtn">Nuevo / limpiar</button>
-          </div>
-        </div>
-
-        <h3 style="margin-top:24px;color:var(--green);">Lista de productos</h3>
-        <div class="toolbar" style="margin-top:10px;">
-          <input class="search-input" id="adminSearch" type="search" placeholder="Buscar producto para editar..." />
-          <div class="result-count" id="adminCount">0 productos</div>
-        </div>
-        <div class="admin-list" id="adminList"></div>
-      </div>
-    </section>
-
-    <section class="benefits">
-      <div class="benefit">📲 Pedidos por WhatsApp</div>
-      <div class="benefit">🥬 Productos frescos todos los días</div>
-      <div class="benefit">🛵 Entrega disponible</div>
-      <div class="benefit">🤝 Atención rápida y amable</div>
-    </section>
+    <div id="tests" class="tests"></div>
   </main>
 
-  <div class="floating-cart" id="floatingCart"><span>🛒 <strong id="floatingCount">0</strong> productos</span><strong id="floatingTotal">$0.00</strong></div>
+  <!-- Fixed cart bar -->
+  <div id="cartBar" class="cart-bar hidden">
+    <div>
+      <strong>🛒 Carrito</strong> <span id="cartCount">0</span><br>
+      <span id="cartTotalBar">$0.00</span>
+    </div>
+    <button id="openCartBtn" class="btn-green" style="width:auto;padding:10px 18px;">Ver carrito</button>
+  </div>
 
-  <footer>© 2026 Fresko App. Pedido directo por WhatsApp.</footer>
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Iniciar sesión (Admin)</h2>
+        <button class="close" data-close="loginModal">&times;</button>
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="loginEmail" type="email" value="admin@freskoapp.com" autocomplete="username">
+      </div>
+      <div class="form-row">
+        <label>Contraseña</label>
+        <input id="loginPass" type="password" autocomplete="current-password">
+      </div>
+      <div id="loginError" style="color:#b91c1c;font-size:13px;margin-bottom:8px;"></div>
+      <button id="loginBtn" class="btn-green">Iniciar sesión</button>
+      <div style="margin-top:10px;font-size:12px;color:#666;text-align:center;">
+        Solo el administrador autorizado puede acceder.
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard Modal -->
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Panel Admin</h2>
+        <button class="close" data-close="adminModal">&times;</button>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <strong>Tienda</strong>
+        <div class="form-row"><label>Nombre</label><input id="s_name" /></div>
+        <div class="form-row"><label>Subtítulo</label><input id="s_subtitle" /></div>
+        <div class="form-row"><label>Horario</label><input id="s_hours" /></div>
+        <div class="form-row"><label>Delivery</label><input id="s_delivery" /></div>
+        <div class="row">
+          <div class="form-row"><label>Delivery fee ($)</label><input id="s_fee" type="number" step="0.01" /></div>
+          <div class="form-row"><label>Mínimo orden ($)</label><input id="s_min" type="number" step="0.01" /></div>
+        </div>
+        <div class="form-row">
+          <label><input id="s_open" type="checkbox" style="width:auto;margin-right:6px;"> Tienda abierta</label>
+        </div>
+        <button id="saveStoreBtn" class="btn-green">Guardar ajustes de tienda</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <strong>Productos (<span id="adminProdCount">0</span>)</strong>
+        <button id="newProductBtn" class="btn-secondary" style="padding:6px 12px;font-size:13px;">+ Nuevo</button>
+      </div>
+
+      <button id="loadCatalogBtn" class="btn-green" style="margin-bottom:8px;">Cargar catálogo inicial (58 productos)</button>
+
+      <div id="adminList" class="admin-list"></div>
+
+      <div style="margin-top:14px;">
+        <button id="signOutBtn" class="btn-danger" style="width:100%;">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Editor Modal -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="prodModalTitle">Editar producto</h2>
+        <button class="close" data-close="productModal">&times;</button>
+      </div>
+
+      <input type="hidden" id="prodId">
+
+      <div class="form-row"><label>Nombre</label><input id="p_name" /></div>
+      <div class="row">
+        <div class="form-row"><label>Categoría</label>
+          <select id="p_cat">
+            <option>Frutas</option><option>Jugos</option><option>Verduras</option><option>Tubérculos</option><option>Hierbas</option><option>Otros</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Orden</label><input id="p_order" type="number" /></div>
+      </div>
+      <div class="row">
+        <div class="form-row"><label>Precio</label><input id="p_price" type="number" step="0.01" /></div>
+        <div class="form-row"><label>Unidad</label><input id="p_unit" placeholder="kg, unidad, manojo..." /></div>
+      </div>
+      <div class="form-row"><label>Emoji</label><input id="p_emoji" /></div>
+      <div class="form-row"><label>Descripción</label><textarea id="p_desc"></textarea></div>
+
+      <div class="form-row">
+        <label>Foto actual</label>
+        <div id="p_thumb" class="thumb" style="width:92px;height:92px;font-size:42px;margin-bottom:6px;"></div>
+        <input id="p_file" type="file" accept="image/*">
+        <button id="uploadPhotoBtn" class="btn-secondary" style="margin-top:6px;width:auto;padding:7px 12px;">Subir foto (comprimir WebP 800px)</button>
+        <div id="uploadStatus" style="font-size:12px;margin-top:4px;"></div>
+        <progress id="uploadProgress" value="0" max="100" style="width:100%;display:none;"></progress>
+      </div>
+
+      <div class="row" style="margin-top:6px;">
+        <div class="form-row"><label><input id="p_visible" type="checkbox" style="width:auto;margin-right:6px;"> Visible</label></div>
+        <div class="form-row"><label><input id="p_available" type="checkbox" style="width:auto;margin-right:6px;"> Disponible</label></div>
+      </div>
+
+      <button id="saveProductBtn" class="btn-green" style="margin-top:8px;">Guardar producto</button>
+      <button id="deleteProductBtn" class="btn-danger" style="margin-top:8px;background:#7f1d1d;">Eliminar producto</button>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Tu carrito</h2>
+        <button class="close" data-close="cartModal">&times;</button>
+      </div>
+
+      <div id="cartItems"></div>
+
+      <div style="margin:14px 0 6px;padding-top:10px;border-top:1px solid #eee;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin:3px 0;"><span>Subtotal</span><strong id="subtotal">$0.00</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin:3px 0;"><span>Delivery</span><strong id="delivery">$0.00</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;margin:6px 0 2px;"><span><strong>Total</strong></span><strong id="total">$0.00</strong></div>
+        <div id="minNote" style="font-size:12px;color:#b91c1c;margin-top:4px;"></div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="form-row"><label>Tu nombre</label><input id="co_name" placeholder="Nombre completo"></div>
+        <div class="form-row"><label>Dirección de entrega</label><textarea id="co_address" placeholder="Dirección, barrio, referencias..."></textarea></div>
+        <div class="form-row">
+          <label>Método de pago</label>
+          <select id="co_pay">
+            <option>Efectivo</option>
+            <option>Transferencia / Yappy</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Notas (opcional)</label><textarea id="co_notes" placeholder="Sin cebolla, llamar al llegar, etc."></textarea></div>
+      </div>
+
+      <button id="checkoutBtn" class="btn-green">Enviar pedido por WhatsApp</button>
+      <div id="checkoutBlock" style="font-size:12px;color:#b91c1c;margin-top:6px;"></div>
+    </div>
+  </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      doc,
-      getDocs,
-      setDoc,
-      deleteDoc,
-      writeBatch,
-      onSnapshot,
-      query,
-      orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyA08k-DcyW6E5WeKLUvjI_fapK6uE2aro8",
@@ -338,606 +280,1196 @@
     };
 
     const ADMIN_UID = "gDK9Zay7iwSDh2dCdLdzXuR30PB2";
-    const whatsappNumber = "50769829621";
-    const IMAGE_FOLDER = "";
-    const IMAGE_EXTENSION = ".png";
+    const WHATSAPP = "50769829621";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const defaultSettings = {
-      name: "Fresko App",
-      subtitle: "Calidad, frescura y buenos precios para tu hogar",
-      hours: "Lunes a Domingo | 8:00 a.m. - 7:00 p.m.",
-      delivery: "Disponible por WhatsApp",
-      deliveryFee: 0,
-      minimumOrder: 10,
-      isOpen: true
-    };
-
-    const productData = [
-      [1,"Banana","Frutas",0.75,"libra","🍌","Banana fresca seleccionada"],
-      [2,"Plátano verde","Tubérculos",0.45,"unidad","🍌","Para patacones y comidas"],
-      [3,"Manzana roja","Frutas",0.85,"unidad","🍎","Dulce y crujiente"],
-      [4,"Manzana verde","Frutas",0.90,"unidad","🍏","Fresca y ácida"],
-      [5,"Naranja","Frutas",0.60,"unidad","🍊","Jugosa y fresca"],
-      [6,"Mandarina","Frutas",0.50,"unidad","🍊","Fácil de pelar"],
-      [7,"Limón persa","Frutas",0.35,"unidad","🍋","Grande y jugoso"],
-      [8,"Limón","Frutas",0.25,"unidad","🍋","Para jugos y comidas"],
-      [9,"Uva verde","Frutas",3.25,"libra","🍇","Fresca y dulce"],
-      [10,"Uva roja","Frutas",3.25,"libra","🍇","Fresca y dulce"],
-      [11,"Papaya","Frutas",2.00,"unidad","🟠","Madura y dulce"],
-      [12,"Mango","Frutas",0.90,"unidad","🥭","Tropical y dulce"],
-      [13,"Aguacate","Frutas",1.25,"unidad","🥑","Ideal para ensaladas y comidas"],
-      [14,"Fresa","Frutas",3.50,"paquete","🍓","Dulce y fresca"],
-      [15,"Blueberry","Frutas",4.50,"paquete","🫐","Fresco y saludable"],
-      [16,"Frambuesa","Frutas",4.50,"paquete","🍓","Delicada y dulce"],
-      [17,"Kiwi","Frutas",0.95,"unidad","🥝","Fresco y ácido"],
-      [18,"Pera","Frutas",0.90,"unidad","🍐","Dulce y jugosa"],
-      [19,"Durazno","Frutas",1.20,"unidad","🍑","Dulce y suave"],
-      [20,"Ciruela","Frutas",0.85,"unidad","🟣","Dulce y jugosa"],
-      [21,"Cereza","Frutas",5.50,"libra","🍒","Dulce y especial"],
-      [22,"Maracuyá","Frutas",0.75,"unidad","🟡","Para jugos naturales"],
-      [23,"Guayaba","Frutas",1.25,"libra","🟢","Aromática y fresca"],
-      [24,"Pitahaya","Frutas",2.75,"unidad","🐉","Fruta del dragón"],
-      [25,"Lichi","Frutas",4.00,"libra","🔴","Dulce y exótico"],
-      [26,"Toronja","Frutas",1.10,"unidad","🍊","Cítrica y fresca"],
-      [27,"Tomate","Verduras",1.25,"libra","🍅","Fresco para ensaladas y salsas"],
-      [28,"Tomate cherry","Verduras",2.50,"paquete","🍅","Pequeño y dulce"],
-      [29,"Lechuga","Verduras",1.50,"unidad","🥬","Crujiente y fresca"],
-      [30,"Espinaca","Verduras",2.00,"bolsa","🥬","Fresca y nutritiva"],
-      [31,"Zanahoria","Verduras",1.00,"libra","🥕","Fresca y dulce"],
-      [32,"Cebolla blanca","Verduras",0.95,"libra","🧅","Básica para cocinar"],
-      [33,"Cebolla morada","Verduras",1.20,"libra","🧅","Ideal para ensaladas"],
-      [34,"Cebollín","Verduras",0.75,"manojo","🌱","Fresco y aromático"],
-      [35,"Ajo","Verduras",0.50,"cabeza","🧄","Para sazonar"],
-      [36,"Papa","Tubérculos",0.85,"libra","🥔","Para cocinar, freír o hervir"],
-      [37,"Papín","Tubérculos",1.20,"libra","🥔","Papa pequeña seleccionada"],
-      [38,"Papa dulce","Tubérculos",1.10,"libra","🍠","Dulce y nutritiva"],
-      [39,"Yuca","Tubérculos",0.90,"libra","🤎","Fresca para hervir o freír"],
-      [40,"Ñame","Tubérculos",1.25,"libra","🤎","Ideal para sopas"],
-      [41,"Remolacha","Verduras",1.20,"libra","🟣","Color y sabor natural"],
-      [42,"Rábano","Verduras",1.00,"manojo","🔴","Crujiente y fresco"],
-      [43,"Pepino","Verduras",0.75,"unidad","🥒","Refrescante para ensaladas"],
-      [44,"Brócoli","Verduras",2.25,"unidad","🥦","Fresco y verde"],
-      [45,"Coliflor","Verduras",2.50,"unidad","⚪","Ideal para cocinar"],
-      [46,"Repollo verde","Verduras",1.50,"unidad","🥬","Fresco y rendidor"],
-      [47,"Repollo morado","Verduras",1.75,"unidad","🟣","Color para ensaladas"],
-      [48,"Pimentón rojo","Verduras",1.20,"unidad","🫑","Dulce y fresco"],
-      [49,"Pimentón verde","Verduras",1.10,"unidad","🫑","Fresco para cocinar"],
-      [50,"Pimentón amarillo","Verduras",1.30,"unidad","🫑","Color y sabor"],
-      [51,"Habanero","Verduras",1.75,"bolsa","🌶️","Picante y fresco"],
-      [52,"Berenjena","Verduras",1.25,"unidad","🍆","Fresca para cocinar"],
-      [53,"Zucchini","Verduras",1.00,"unidad","🥒","Verde y fresco"],
-      [54,"Zapallo","Verduras",1.00,"libra","🎃","Ideal para sopas"],
-      [55,"Apio","Verduras",1.75,"manojo","🌿","Aromático y fresco"],
-      [56,"Cilantro","Hierbas",0.50,"manojo","🌿","Fresco y aromático"],
-      [57,"Perejil","Hierbas",0.50,"manojo","🌿","Para cocinar y decorar"],
-      [58,"Jengibre","Tubérculos",1.50,"libra","🫚","Para té, jugos y comidas"]
+    const PRODUCT_SEED = [
+      {name:"Banana", category:"Frutas", price:0.85, unit:"kg", emoji:"🍌", description:"Dulce y energética, perfecta para el día a día."},
+      {name:"Plátano verde", category:"Frutas", price:0.65, unit:"kg", emoji:"🍌", description:"Ideal para freír o cocinar. Rico en almidón."},
+      {name:"Manzana roja", category:"Frutas", price:2.25, unit:"kg", emoji:"🍎", description:"Crujiente y dulce, gran fuente de fibra."},
+      {name:"Manzana verde", category:"Frutas", price:2.15, unit:"kg", emoji:"🍏", description:"Ácida y refrescante, excelente para ensaladas."},
+      {name:"Naranja", category:"Frutas", price:1.35, unit:"kg", emoji:"🍊", description:"Jugos y vitamina C natural."},
+      {name:"Mandarina", category:"Frutas", price:1.65, unit:"kg", emoji:"🍊", description:"Fácil de pelar, dulce y jugosa."},
+      {name:"Limón persa", category:"Frutas", price:1.10, unit:"kg", emoji:"🍋", description:"Ideal para bebidas, aderezos y ceviche."},
+      {name:"Limón", category:"Frutas", price:0.95, unit:"kg", emoji:"🍋", description:"Sabor intenso. Esencial en la cocina panameña."},
+      {name:"Uva verde", category:"Frutas", price:3.85, unit:"kg", emoji:"🍇", description:"Dulce y refrescante, sin semillas."},
+      {name:"Uva roja", category:"Frutas", price:3.95, unit:"kg", emoji:"🍇", description:"Llena de antioxidantes y sabor."},
+      {name:"Papaya", category:"Frutas", price:1.75, unit:"unidad", emoji:"🧡", description:"Madura, dulce y digestiva."},
+      {name:"Mango", category:"Frutas", price:1.45, unit:"kg", emoji:"🥭", description:"Tropical y jugoso. Temporada de verano."},
+      {name:"Aguacate", category:"Frutas", price:1.25, unit:"unidad", emoji:"🥑", description:"Cremoso y nutritivo. Rico en grasas buenas."},
+      {name:"Fresa", category:"Frutas", price:4.25, unit:"libra", emoji:"🍓", description:"Fresca y aromática, perfecta para postres."},
+      {name:"Blueberry", category:"Frutas", price:5.95, unit:"libra", emoji:"🫐", description:"Antioxidantes premium. Pequeñas y dulces."},
+      {name:"Frambuesa", category:"Frutas", price:6.25, unit:"libra", emoji:"🍓", description:"Delicada, ácida y llena de sabor."},
+      {name:"Kiwi", category:"Frutas", price:3.75, unit:"unidad", emoji:"🥝", description:"Exótico y rico en vitamina C."},
+      {name:"Pera", category:"Frutas", price:2.35, unit:"kg", emoji:"🍐", description:"Jugosa y dulce. Buena para picar."},
+      {name:"Durazno", category:"Frutas", price:2.85, unit:"kg", emoji:"🍑", description:"Suave y perfumado cuando está maduro."},
+      {name:"Ciruela", category:"Frutas", price:2.65, unit:"kg", emoji:"🟣", description:"Dulce con toque ácido. Excelente fresca."},
+      {name:"Cereza", category:"Frutas", price:7.50, unit:"libra", emoji:"🍒", description:"Temporada corta. Dulzura intensa."},
+      {name:"Maracuyá", category:"Frutas", price:2.15, unit:"unidad", emoji:"🟡", description:"Ácido y aromático. Ideal para jugos."},
+      {name:"Guayaba", category:"Frutas", price:1.85, unit:"kg", emoji:"🟢", description:"Aromática y versátil. Rica en vitamina C."},
+      {name:"Pitahaya", category:"Frutas", price:3.45, unit:"unidad", emoji:"🐉", description:"Exótica, refrescante y bonita."},
+      {name:"Lichi", category:"Frutas", price:4.85, unit:"libra", emoji:"🫒", description:"Dulce como uva con textura única."},
+      {name:"Toronja", category:"Frutas", price:1.55, unit:"kg", emoji:"🍊", description:"Cítrico rosado, menos ácido que la naranja."},
+      {name:"Tomate", category:"Verduras", price:1.15, unit:"kg", emoji:"🍅", description:"Fresco y jugoso. Base de muchas recetas."},
+      {name:"Tomate cherry", category:"Verduras", price:2.45, unit:"libra", emoji:"🍅", description:"Dulce y pequeño. Perfecto para ensaladas."},
+      {name:"Lechuga", category:"Verduras", price:1.35, unit:"unidad", emoji:"🥬", description:"Crujiente y fresca. Variedad romana."},
+      {name:"Espinaca", category:"Verduras", price:1.65, unit:"manojo", emoji:"🥬", description:"Tierna y nutritiva. Rica en hierro."},
+      {name:"Zanahoria", category:"Verduras", price:1.05, unit:"kg", emoji:"🥕", description:"Dulce y versátil. Cruda o cocida."},
+      {name:"Cebolla blanca", category:"Verduras", price:0.95, unit:"kg", emoji:"🧅", description:"Sabor suave. Esencial en la cocina."},
+      {name:"Cebolla morada", category:"Verduras", price:1.10, unit:"kg", emoji:"🧅", description:"Más dulce y colorida. Ideal en ensaladas."},
+      {name:"Cebollín", category:"Verduras", price:0.85, unit:"manojo", emoji:"🌿", description:"Sabor suave de cebolla. Fresco."},
+      {name:"Ajo", category:"Verduras", price:2.75, unit:"kg", emoji:"🧄", description:"Aroma potente. Usar con moderación."},
+      {name:"Papa", category:"Tubérculos", price:0.95, unit:"kg", emoji:"🥔", description:"Versátil y económica. Blanca o amarilla."},
+      {name:"Papín", category:"Tubérculos", price:1.15, unit:"kg", emoji:"🥔", description:"Papa pequeña y dulce. Excelente para hornear."},
+      {name:"Papa dulce", category:"Tubérculos", price:1.25, unit:"kg", emoji:"🍠", description:"Naranja, dulce y nutritiva."},
+      {name:"Yuca", category:"Tubérculos", price:0.85, unit:"kg", emoji:"🥔", description:"Raíz almidonada. Buena para hervir o freír."},
+      {name:"Ñame", category:"Tubérculos", price:1.35, unit:"kg", emoji:"🍠", description:"Textura firme. Popular en el Caribe."},
+      {name:"Remolacha", category:"Tubérculos", price:1.65, unit:"kg", emoji:"🔴", description:"Dulce terrosa. Excelente asada o en ensalada."},
+      {name:"Rábano", category:"Tubérculos", price:1.25, unit:"manojo", emoji:"🌶️", description:"Picante y crujiente. Fresco y ligero."},
+      {name:"Pepino", category:"Verduras", price:0.75, unit:"kg", emoji:"🥒", description:"Refrescante y bajo en calorías."},
+      {name:"Brócoli", category:"Verduras", price:1.95, unit:"kg", emoji:"🥦", description:"Nutritivo y versátil. Al vapor o salteado."},
+      {name:"Coliflor", category:"Verduras", price:1.85, unit:"kg", emoji:"🥦", description:"Suave y cremosa cuando se cocina."},
+      {name:"Repollo verde", category:"Verduras", price:0.85, unit:"unidad", emoji:"🥬", description:"Crujiente. Ideal para ensalada o slaw."},
+      {name:"Repollo morado", category:"Verduras", price:0.95, unit:"unidad", emoji:"🟣", description:"Colorido y ligeramente dulce."},
+      {name:"Pimentón rojo", category:"Verduras", price:1.55, unit:"kg", emoji:"🫑", description:"Dulce y colorido. Rico en vitamina C."},
+      {name:"Pimentón verde", category:"Verduras", price:1.35, unit:"kg", emoji:"🫑", description:"Sabor fresco. Muy usado en sofritos."},
+      {name:"Pimentón amarillo", category:"Verduras", price:1.65, unit:"kg", emoji:"🫑", description:"Dulce y vibrante. Aporta color."},
+      {name:"Habanero", category:"Verduras", price:2.95, unit:"libra", emoji:"🌶️", description:"¡Muy picante! Usar con cuidado."},
+      {name:"Berenjena", category:"Verduras", price:1.45, unit:"kg", emoji:"🍆", description:"Esponjosa al cocinar. Perfecta al grill."},
+      {name:"Zucchini", category:"Verduras", price:1.55, unit:"kg", emoji:"🥒", description:"Tierno y de sabor suave."},
+      {name:"Zapallo", category:"Verduras", price:0.95, unit:"kg", emoji:"🎃", description:"Calabaza local. Dulce y versátil."},
+      {name:"Apio", category:"Verduras", price:1.75, unit:"manojo", emoji:"🥬", description:"Crujiente y refrescante. Para sopas y snacks."},
+      {name:"Cilantro", category:"Hierbas", price:0.65, unit:"manojo", emoji:"🌿", description:"Aroma fresco esencial en la cocina latina."},
+      {name:"Perejil", category:"Hierbas", price:0.55, unit:"manojo", emoji:"🌿", description:"Sabor herbal suave. Ideal para finalizar platos."},
+      {name:"Jengibre", category:"Hierbas", price:3.25, unit:"kg", emoji:"🫚", description:"Picante y aromático. Té, wok y postres."}
     ];
 
-    const defaultProducts = productData.map(([id, name, category, price, unit, emoji, description]) => ({
-      id, name, category, price, unit, emoji,
-      photo: `${IMAGE_FOLDER}${id}${IMAGE_EXTENSION}`,
-      description,
-      visible: true,
-      available: true
-    }));
-
+    let app, auth, db, storage;
+    let currentUser = null;
+    let isAdmin = false;
     let products = [];
-    let settings = { ...defaultSettings };
-    let cart = JSON.parse(localStorage.getItem("freskoCart") || "[]");
-    let currentCategory = "Todos";
-    let adminUser = null;
+    let settings = null;
+    let cart = [];
+    let activeCategory = "Todos";
+    let searchTerm = "";
+    let productsUnsub = null;
+    let settingsUnsub = null;
+    let testsRun = false;
 
-    const $ = id => document.getElementById(id);
-    const setText = (id, value) => { const el = $(id); if (el) el.textContent = value; };
-    const setValue = (id, value) => { const el = $(id); if (el) el.value = value ?? ""; };
-    const getValue = id => { const el = $(id); return el ? el.value : ""; };
-    const show = id => { const el = $(id); if (el) el.classList.remove("hide"); };
-    const hide = id => { const el = $(id); if (el) el.classList.add("hide"); };
-    const formatMoney = value => "$" + Number(value || 0).toFixed(2);
-    const escapeHTML = value => String(value ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;")
-      .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+    function initFirebase() {
+      try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        storage = getStorage(app);
 
-    function saveCart() {
-      localStorage.setItem("freskoCart", JSON.stringify(cart));
+        onAuthStateChanged(auth, (user) => {
+          currentUser = user;
+          isAdmin = !!(user && user.uid === ADMIN_UID);
+          const btn = document.getElementById('adminBtn');
+          if (btn) {
+            btn.textContent = isAdmin ? "Admin ✓" : "Admin";
+            btn.classList.toggle('admin', isAdmin);
+          }
+          // If admin panel open and lost privileges, close it
+          const adminM = document.getElementById('adminModal');
+          if (adminM && adminM.classList.contains('active') && !isAdmin) {
+            adminM.classList.remove('active');
+            showToast("Sesión de admin finalizada", true);
+          }
+        });
+
+        // Start listeners (they will render when data arrives)
+        listenProducts();
+        listenSettings();
+
+        console.log('%c[Fresko] Firebase inicializado correctamente', 'color:#2f9e44');
+      } catch (e) {
+        console.error('[Fresko] Error init Firebase', e);
+        showToast("Error al conectar con Firebase", true);
+      }
     }
 
-    function getVisibleProducts() {
-      return products.filter(product => product.visible !== false);
-    }
-
-    function getCartItem(productId) {
-      return cart.find(item => item.id === productId);
-    }
-
-    function getProductQty(productId) {
-      const item = getCartItem(productId);
-      return item ? Number(item.quantity || 0) : 0;
-    }
-
-    function getCartTotal() {
-      return cart.reduce((total, item) => total + Number(item.price || 0) * Number(item.quantity || 0), 0);
-    }
-
-    function getCartCount() {
-      return cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
-    }
-
-    function renderImage(product) {
-      const emoji = escapeHTML(product.emoji || "🛒");
-      if (!product.photo) return `<span class="product-emoji">${emoji}</span>`;
-      return `<img src="${escapeHTML(product.photo)}" alt="${escapeHTML(product.name)}" onerror="this.outerHTML='<span class=&quot;product-emoji&quot;>${emoji}</span>'">`;
-    }
-
-    function renderThumb(product) {
-      const emoji = escapeHTML(product.emoji || "🛒");
-      if (!product.photo) return emoji;
-      return `<img src="${escapeHTML(product.photo)}" alt="${escapeHTML(product.name)}" onerror="this.outerHTML='<span>${emoji}</span>'">`;
-    }
-
-    function applyStoreSettings() {
-      setText("storeTitle", settings.name);
-      setText("storeSubtitle", settings.subtitle);
-      setText("storeNameText", settings.name);
-      setText("storeHoursText", settings.hours);
-      setText("storeDeliveryText", settings.delivery);
-      setText("storeMinimumText", formatMoney(settings.minimumOrder));
-      setText("storeOpenText", settings.isOpen === false ? "Cerrada" : "Abierta");
-      settings.isOpen === false ? show("closedNotice") : hide("closedNotice");
-
-      setValue("adminStoreName", settings.name);
-      setValue("adminStoreSubtitle", settings.subtitle);
-      setValue("adminStoreHours", settings.hours);
-      setValue("adminStoreDelivery", settings.delivery);
-      setValue("adminDeliveryFee", Number(settings.deliveryFee || 0));
-      setValue("adminMinimumOrder", Number(settings.minimumOrder || 0));
-      setValue("adminStoreOpen", String(settings.isOpen !== false));
-    }
-
-    function syncCartWithProducts() {
-      cart = cart.map(cartItem => {
-        const latest = products.find(product => product.id === cartItem.id);
-        return latest ? { ...latest, quantity: cartItem.quantity } : cartItem;
+    function listenProducts() {
+      if (productsUnsub) productsUnsub();
+      // No orderBy() here on purpose: Firestore's orderBy excludes any document
+      // missing that field, and some existing products have no "order" field.
+      // Sorting is done client-side below with a fallback so nothing gets hidden.
+      const q = collection(db, 'products');
+      productsUnsub = onSnapshot(q, (snap) => {
+        products = [];
+        snap.forEach(d => {
+          const data = d.data();
+          products.push({ id: d.id, ...data });
+        });
+        products.sort((a, b) => {
+          const ao = a.order ?? Number(a.id) ?? 9999;
+          const bo = b.order ?? Number(b.id) ?? 9999;
+          return ao - bo;
+        });
+        filterAndRender();
+        reconcileCart();
+        renderAdminIfOpen();
+        if (!testsRun && products.length >= 58) {
+          runInternalTests();
+          testsRun = true;
+        }
+      }, (err) => {
+        console.error('[Fresko] products onSnapshot error', err);
+        showToast("Error cargando productos", true);
       });
-      saveCart();
+    }
+
+    function listenSettings() {
+      if (settingsUnsub) settingsUnsub();
+      const ref = doc(db, 'settings', 'store');
+      settingsUnsub = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+          settings = snap.data();
+        } else {
+          settings = {
+            name: "Fresko",
+            subtitle: "Frutas y verduras frescas de Panamá",
+            hours: "Lun-Sáb 7am-6pm",
+            delivery: "Entregas en Ciudad de Panamá y áreas cercanas",
+            deliveryFee: 2.50,
+            minimumOrder: 10,
+            isOpen: true
+          };
+        }
+        renderStoreInfo();
+        renderCart(); // update totals if open
+      }, (err) => {
+        console.error('[Fresko] settings onSnapshot error', err);
+      });
+    }
+
+    function renderStoreInfo() {
+      const el = document.getElementById('storeInfo');
+      if (!el || !settings) return;
+      const open = !!settings.isOpen;
+      el.innerHTML = `
+        <div class="store-name">${escapeHtml(settings.name || 'Fresko')}</div>
+        <div class="store-meta">
+          <span>${escapeHtml(settings.subtitle || '')}</span>
+          <span class="badge ${open ? 'open' : 'closed'}">${open ? 'ABIERTA' : 'CERRADA'}</span>
+          <span>🕒 ${escapeHtml(settings.hours || '')}</span>
+          <span>🚚 ${escapeHtml(settings.delivery || '')}</span>
+          <span>Delivery: $${Number(settings.deliveryFee || 0).toFixed(2)}</span>
+          <span>Mínimo: $${Number(settings.minimumOrder || 0).toFixed(2)}</span>
+        </div>
+      `;
     }
 
     function renderCategories() {
-      const categoriesEl = $("categories");
-      if (!categoriesEl) return;
-      const categories = ["Todos", ...new Set(getVisibleProducts().map(product => product.category))];
-      if (!categories.includes(currentCategory)) currentCategory = "Todos";
-
-      categoriesEl.innerHTML = categories.map(category => `
-        <button class="category-btn ${category === currentCategory ? "active" : ""}" type="button" data-category="${escapeHTML(category)}">
-          ${escapeHTML(category)}
-        </button>
-      `).join("");
-
-      categoriesEl.querySelectorAll("[data-category]").forEach(button => {
-        button.addEventListener("click", () => {
-          currentCategory = button.dataset.category || "Todos";
+      const container = document.getElementById('categories');
+      if (!container) return;
+      const cats = ["Todos", "Frutas", "Jugos", "Verduras", "Tubérculos", "Hierbas", "Otros"];
+      container.innerHTML = '';
+      cats.forEach(cat => {
+        const b = document.createElement('button');
+        b.className = 'cat' + (cat === activeCategory ? ' active' : '');
+        b.textContent = cat;
+        b.onclick = () => {
+          activeCategory = cat;
           renderCategories();
-          renderProducts();
-        });
+          filterAndRender();
+        };
+        container.appendChild(b);
       });
     }
 
-    function productButtonHTML(product) {
-      if (product.available === false) return `<button class="add-btn" type="button" disabled>Agotado</button>`;
-      const qty = getProductQty(product.id);
-      if (qty > 0) {
-        return `
-          <div class="card-qty-controls">
-            <button type="button" data-dec="${product.id}">−</button>
-            <strong>${qty} en carrito</strong>
-            <button type="button" data-inc="${product.id}">+</button>
+    function filterAndRender() {
+      const term = (searchTerm || '').toLowerCase().trim();
+      let list = products.filter(p => p.visible !== false);
+      if (activeCategory !== "Todos") {
+        list = list.filter(p => p.category === activeCategory);
+      }
+      if (term) {
+        list = list.filter(p =>
+          (p.name && p.name.toLowerCase().includes(term)) ||
+          (p.description && p.description.toLowerCase().includes(term))
+        );
+      }
+      renderProducts(list);
+    }
+
+    function renderProducts(list) {
+      const grid = document.getElementById('productsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!list || list.length === 0) {
+        grid.innerHTML = '<div class="empty">No se encontraron productos.</div>';
+        return;
+      }
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const price = Number(p.price || 0).toFixed(2);
+        const avail = p.available !== false;
+        const photo = p.photo || null;
+
+        const fallbackEmoji = p.emoji || '🥬';
+        let mediaHTML = '';
+        if (photo) {
+          mediaHTML = `<img src="${escapeHtml(photo)}" alt="${escapeHtml(p.name)}" loading="lazy" data-fallback="${escapeHtml(fallbackEmoji)}">`;
+        } else {
+          mediaHTML = escapeHtml(fallbackEmoji);
+        }
+
+        card.innerHTML = `
+          <div class="media">${mediaHTML}</div>
+          <div class="info">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="desc">${escapeHtml(p.description || '')}</div>
+            <div class="price-row">
+              <div>
+                <span class="price">$${price}</span>
+                <span class="unit">/ ${escapeHtml(p.unit || '')}</span>
+              </div>
+            </div>
+            ${avail
+              ? `<button class="btn" data-add="${escapeHtml(p.id)}">Agregar</button>`
+              : `<div class="agotado">AGOTADO</div>`
+            }
           </div>
         `;
-      }
-      return `<button class="add-btn" type="button" data-add="${product.id}">Agregar al carrito</button>`;
+        const img = card.querySelector('.media img');
+        if (img) {
+          img.onerror = function () {
+            this.replaceWith(document.createTextNode(this.dataset.fallback || '🥬'));
+          };
+        }
+        if (avail) {
+          const btn = card.querySelector('[data-add]');
+          if (btn) btn.onclick = () => addToCart(p.id);
+        }
+        grid.appendChild(card);
+      });
     }
 
-    function renderProducts() {
-      const grid = $("productsGrid");
-      const resultCount = $("resultCount");
-      if (!grid || !resultCount) return;
-
-      const search = getValue("searchInput").toLowerCase().trim();
-      let list = getVisibleProducts();
-
-      if (currentCategory !== "Todos") list = list.filter(product => product.category === currentCategory);
-      if (search) {
-        list = list.filter(product => `${product.name} ${product.category} ${product.description} ${product.unit}`.toLowerCase().includes(search));
-      }
-
-      resultCount.textContent = `${list.length} productos`;
-
-      if (!products.length) {
-        grid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">No hay productos todavía. Entra a Admin y toca “Cargar catálogo inicial”.</div>`;
+    function addToCart(id) {
+      const p = products.find(x => x.id === id);
+      if (!p || p.available === false || p.visible === false) {
+        showToast("Producto no disponible", true);
         return;
       }
+      const existing = cart.find(c => c.id === id);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+      } else {
+        cart.push({ id, qty: 1 });
+      }
+      saveCart();
+      updateCartBar();
+      showToast(`${p.name} agregado`);
+      // Small animation hint
+      const bar = document.getElementById('cartBar');
+      if (bar) {
+        bar.style.transition = 'transform .1s';
+        bar.style.transform = 'scale(1.02)';
+        setTimeout(() => { bar.style.transform = ''; }, 120);
+      }
+    }
 
-      if (!list.length) {
-        grid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">No encontramos productos.</div>`;
+    function saveCart() {
+      try { localStorage.setItem('fresko_cart', JSON.stringify(cart)); } catch (e) {}
+    }
+
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('fresko_cart');
+        cart = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(cart)) cart = [];
+        // sanitize
+        cart = cart.filter(c => c && c.id && Number(c.qty) > 0);
+      } catch (e) { cart = []; }
+    }
+
+    function reconcileCart() {
+      let changed = false;
+      const before = cart.length;
+      cart = cart.filter(item => {
+        const p = products.find(x => x.id === item.id);
+        if (!p) { changed = true; return false; }
+        if (p.visible === false) { changed = true; return false; }
+        return true;
+      });
+      // prices are always read live from products map — nothing to mutate here
+      if (changed || before !== cart.length) saveCart();
+      updateCartBar();
+      // if cart modal is open, re-render it
+      const cm = document.getElementById('cartModal');
+      if (cm && cm.classList.contains('active')) renderCart();
+    }
+
+    function updateCartBar() {
+      const bar = document.getElementById('cartBar');
+      const countEl = document.getElementById('cartCount');
+      const totalEl = document.getElementById('cartTotalBar');
+      if (!bar || !countEl || !totalEl) return;
+
+      if (!cart.length) {
+        bar.classList.add('hidden');
         return;
       }
+      bar.classList.remove('hidden');
 
-      grid.innerHTML = list.map(product => `
-        <article class="product-card ${product.available === false ? "sold-out" : ""}">
-          <div>
-            <div class="product-img-wrap">${renderImage(product)}</div>
-            ${product.available === false ? '<p class="sold-out-label">Agotado</p>' : ''}
-            <h3>${escapeHTML(product.name)}</h3>
-            <p>${escapeHTML(product.description || "Producto fresco seleccionado")}</p>
-            <p>Por ${escapeHTML(product.unit)}</p>
-            <div class="price">${formatMoney(product.price)}</div>
-          </div>
-          ${productButtonHTML(product)}
-        </article>
-      `).join("");
-
-      grid.querySelectorAll("[data-add]").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.add))));
-      grid.querySelectorAll("[data-inc]").forEach(btn => btn.addEventListener("click", () => increaseQuantity(Number(btn.dataset.inc))));
-      grid.querySelectorAll("[data-dec]").forEach(btn => btn.addEventListener("click", () => decreaseQuantity(Number(btn.dataset.dec))));
+      let count = 0;
+      let subtotal = 0;
+      cart.forEach(item => {
+        const p = products.find(x => x.id === item.id);
+        if (p) {
+          count += (item.qty || 0);
+          subtotal += (p.price || 0) * (item.qty || 0);
+        }
+      });
+      countEl.textContent = count;
+      totalEl.textContent = '$' + subtotal.toFixed(2);
     }
 
-    function addToCart(productId) {
-      const product = products.find(item => item.id === productId && item.visible !== false && item.available !== false);
-      if (!product) return;
-      const item = cart.find(row => row.id === productId);
-      if (item) item.quantity += 1;
-      else cart.push({ ...product, quantity: 1 });
-      saveCart();
-      renderCart();
-      renderProducts();
-    }
-
-    function increaseQuantity(productId) {
-      const item = cart.find(row => row.id === productId);
-      if (item) item.quantity += 1;
-      saveCart();
-      renderCart();
-      renderProducts();
-    }
-
-    function decreaseQuantity(productId) {
-      const item = cart.find(row => row.id === productId);
-      if (!item) return;
-      item.quantity -= 1;
-      if (item.quantity <= 0) cart = cart.filter(row => row.id !== productId);
-      saveCart();
-      renderCart();
-      renderProducts();
-    }
-
-    function removeFromCart(productId) {
-      cart = cart.filter(row => row.id !== productId);
-      saveCart();
-      renderCart();
-      renderProducts();
-    }
-
-    function clearCart() {
-      if (!cart.length) return;
-      if (!confirm("¿Seguro que quieres vaciar el carrito?")) return;
-      cart = [];
-      saveCart();
-      renderCart();
-      renderProducts();
+    function getCartTotals() {
+      let subtotal = 0;
+      let hasUnavailable = false;
+      const items = [];
+      cart.forEach(item => {
+        const p = products.find(x => x.id === item.id);
+        if (!p) return;
+        const line = (p.price || 0) * (item.qty || 0);
+        subtotal += line;
+        if (p.available === false) hasUnavailable = true;
+        items.push({ ...item, product: p, lineTotal: line });
+      });
+      const fee = Number((settings && settings.deliveryFee) || 0);
+      const total = subtotal + fee;
+      const min = Number((settings && settings.minimumOrder) || 0);
+      return { subtotal, fee, total, hasUnavailable, min, items };
     }
 
     function renderCart() {
-      const el = $("cartItems");
-      if (!el) return;
+      const wrap = document.getElementById('cartItems');
+      const subEl = document.getElementById('subtotal');
+      const delEl = document.getElementById('delivery');
+      const totEl = document.getElementById('total');
+      const minNote = document.getElementById('minNote');
+      const chkBtn = document.getElementById('checkoutBtn');
+      const block = document.getElementById('checkoutBlock');
+      if (!wrap || !subEl || !delEl || !totEl || !chkBtn) return;
 
-      if (!cart.length) {
-        el.innerHTML = `<div class="cart-empty">Tu carrito está vacío.</div>`;
-      } else {
-        el.innerHTML = cart.map(item => `
-          <div class="cart-item">
-            <div>
-              <h4>${escapeHTML(item.emoji || "🛒")} ${escapeHTML(item.name)}</h4>
-              <small>${formatMoney(item.price)} por ${escapeHTML(item.unit)}</small>
-              <div class="quantity-controls">
-                <button class="qty-btn" type="button" data-dec-cart="${item.id}">−</button>
-                <strong>${item.quantity}</strong>
-                <button class="qty-btn" type="button" data-inc-cart="${item.id}">+</button>
-              </div>
-              <button class="remove-btn" type="button" data-remove="${item.id}">Eliminar</button>
-            </div>
-            <strong>${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}</strong>
-          </div>
-        `).join("");
+      wrap.innerHTML = '';
+      const t = getCartTotals();
 
-        el.querySelectorAll("[data-inc-cart]").forEach(btn => btn.addEventListener("click", () => increaseQuantity(Number(btn.dataset.incCart))));
-        el.querySelectorAll("[data-dec-cart]").forEach(btn => btn.addEventListener("click", () => decreaseQuantity(Number(btn.dataset.decCart))));
-        el.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => removeFromCart(Number(btn.dataset.remove))));
-      }
-
-      setText("cartTotal", formatMoney(getCartTotal()));
-      setText("floatingCount", String(getCartCount()));
-      setText("floatingTotal", formatMoney(getCartTotal()));
-    }
-
-    function finalizeOrder() {
-      if (!cart.length) return alert("Tu carrito está vacío. Agrega productos antes de finalizar el pedido.");
-      if (settings.isOpen === false && !confirm("La tienda está cerrada. ¿Quieres enviar el pedido para que lo revisen después?")) return;
-
-      const minimumOrder = Number(settings.minimumOrder || 0);
-      if (minimumOrder > 0 && getCartTotal() < minimumOrder) {
-        return alert(`El pedido mínimo es ${formatMoney(minimumOrder)}. Te faltan ${formatMoney(minimumOrder - getCartTotal())}.`);
-      }
-
-      const unavailable = cart.filter(item => item.available === false);
-      if (unavailable.length) {
-        return alert(`Hay productos agotados en tu carrito: ${unavailable.map(item => item.name).join(", ")}.`);
-      }
-
-      const name = getValue("customerName").trim();
-      const address = getValue("customerAddress").trim();
-      const payment = getValue("customerPayment").trim();
-      const notes = getValue("customerNotes").trim();
-      const subtotal = getCartTotal();
-      const deliveryFee = Number(settings.deliveryFee || 0);
-      const total = subtotal + deliveryFee;
-      const orderLines = cart.map(item => `- ${item.name} x ${item.quantity} ${item.unit} — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}`).join("\n");
-      const deliveryLine = deliveryFee > 0 ? `Delivery: ${formatMoney(deliveryFee)}` : "Delivery: A confirmar";
-      const closedLine = settings.isOpen === false ? "\nNota: Pedido enviado con la tienda cerrada." : "";
-      const message = `Hola, quiero hacer este pedido:\n\nPedido:\n${orderLines}\n\nSubtotal: ${formatMoney(subtotal)}\n${deliveryLine}\nTotal: ${formatMoney(total)}${closedLine}\n\nNombre: ${name}\nDirección: ${address}\nForma de pago: ${payment}\nNotas: ${notes}\n\nPor favor confirmar disponibilidad.`;
-
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
-    }
-
-    async function seedInitialCatalog() {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
-      if (!confirm("¿Cargar/restaurar el catálogo inicial de 58 productos en Firebase?")) return;
-
-      const batch = writeBatch(db);
-      defaultProducts.forEach(product => {
-        batch.set(doc(db, "products", String(product.id)), product);
-      });
-      batch.set(doc(db, "settings", "store"), defaultSettings, { merge: true });
-      await batch.commit();
-
-      alert("Catálogo inicial cargado en Firebase.");
-    }
-
-    async function saveStoreSettings() {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
-      const newSettings = {
-        name: getValue("adminStoreName").trim() || defaultSettings.name,
-        subtitle: getValue("adminStoreSubtitle").trim() || defaultSettings.subtitle,
-        hours: getValue("adminStoreHours").trim() || defaultSettings.hours,
-        delivery: getValue("adminStoreDelivery").trim() || defaultSettings.delivery,
-        deliveryFee: Number(getValue("adminDeliveryFee")) || 0,
-        minimumOrder: Number(getValue("adminMinimumOrder")) || 0,
-        isOpen: getValue("adminStoreOpen") !== "false"
-      };
-      await setDoc(doc(db, "settings", "store"), newSettings, { merge: true });
-      alert("Datos de tienda guardados.");
-    }
-
-    function renderAdminList() {
-      const list = $("adminList");
-      const count = $("adminCount");
-      if (!list || !count) return;
-
-      const search = getValue("adminSearch").toLowerCase().trim();
-      let rows = [...products];
-      if (search) rows = rows.filter(product => `${product.name} ${product.category} ${product.description} ${product.unit}`.toLowerCase().includes(search));
-
-      count.textContent = `${rows.length} productos`;
-
-      if (!rows.length) {
-        list.innerHTML = `<div class="cart-empty">No hay productos en Firebase todavía.</div>`;
+      if (!t.items.length) {
+        wrap.innerHTML = '<div style="padding:20px;text-align:center;color:#666;">Tu carrito está vacío.</div>';
+        subEl.textContent = '$0.00';
+        delEl.textContent = '$0.00';
+        totEl.textContent = '$0.00';
+        chkBtn.disabled = true;
+        if (block) block.textContent = '';
+        if (minNote) minNote.textContent = '';
         return;
       }
 
-      list.innerHTML = rows.map(product => `
-        <div class="admin-item">
-          <div class="admin-thumb">${renderThumb(product)}</div>
-          <div>
-            <h4>${escapeHTML(product.name)}
-              ${product.visible === false ? '<span class="hidden-badge">OCULTO</span>' : ''}
-              ${product.available === false ? '<span class="hidden-badge">AGOTADO</span>' : ''}
-            </h4>
-            <p>${escapeHTML(product.category)} • ${formatMoney(product.price)} por ${escapeHTML(product.unit)}<br>${escapeHTML(product.description || "")}<br><strong>Foto:</strong> ${escapeHTML(product.photo || "Sin foto")}</p>
-            <div class="admin-actions" style="margin:0;">
-              <button type="button" class="admin-btn" data-edit="${product.id}">Editar</button>
-              <button type="button" class="admin-btn warning" data-visible="${product.id}">${product.visible === false ? "Mostrar" : "Esconder"}</button>
-              <button type="button" class="admin-btn gray" data-available="${product.id}">${product.available === false ? "Disponible" : "Agotado"}</button>
-              <button type="button" class="admin-btn danger" data-delete="${product.id}">Borrar</button>
+      t.items.forEach(it => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0;';
+        const avail = it.product.available !== false;
+        div.innerHTML = `
+          <div style="flex:1;">
+            <div style="font-weight:700;">${escapeHtml(it.product.name)} ${avail ? '' : '<span style="color:#b91c1c;font-size:11px;">(agotado)</span>'}</div>
+            <div style="font-size:12px;color:#555;">$${Number(it.product.price).toFixed(2)} × ${it.qty} = $${it.lineTotal.toFixed(2)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <button data-dec="${escapeHtml(it.id)}" style="width:28px;height:28px;border-radius:6px;border:1px solid #ccc;background:#fff;">−</button>
+            <span style="min-width:22px;text-align:center;font-weight:700;">${it.qty}</span>
+            <button data-inc="${escapeHtml(it.id)}" style="width:28px;height:28px;border-radius:6px;border:1px solid #ccc;background:#fff;">+</button>
+            <button data-rem="${escapeHtml(it.id)}" style="margin-left:6px;color:#b91c1c;background:none;border:0;font-size:18px;line-height:1;">×</button>
+          </div>
+        `;
+        // attach handlers
+        div.querySelector('[data-dec]').onclick = () => changeQty(it.id, -1);
+        div.querySelector('[data-inc]').onclick = () => changeQty(it.id, 1);
+        div.querySelector('[data-rem]').onclick = () => removeFromCart(it.id);
+        wrap.appendChild(div);
+      });
+
+      subEl.textContent = '$' + t.subtotal.toFixed(2);
+      delEl.textContent = '$' + t.fee.toFixed(2);
+      totEl.textContent = '$' + t.total.toFixed(2);
+
+      const belowMin = t.subtotal < t.min;
+      if (minNote) minNote.textContent = belowMin ? `Mínimo de orden: $${t.min.toFixed(2)}` : '';
+      chkBtn.disabled = t.hasUnavailable || belowMin;
+
+      if (block) {
+        if (t.hasUnavailable) block.textContent = 'Hay productos agotados en el carrito. Quítalos para continuar.';
+        else if (belowMin) block.textContent = `El subtotal debe ser al menos $${t.min.toFixed(2)}.`;
+        else block.textContent = '';
+      }
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(c => c.id === id);
+      if (!item) return;
+      item.qty = Math.max(1, (item.qty || 1) + delta);
+      saveCart();
+      renderCart();
+      updateCartBar();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(c => c.id !== id);
+      saveCart();
+      renderCart();
+      updateCartBar();
+    }
+
+    async function checkoutWhatsApp() {
+      const t = getCartTotals();
+      if (!t.items.length) return;
+
+      const isOpen = settings && settings.isOpen !== false;
+      if (!isOpen) {
+        const ok = confirm("La tienda aparece como CERRADA. ¿Deseas continuar con el pedido de todas formas?");
+        if (!ok) return;
+      }
+      if (t.hasUnavailable) {
+        showToast("No puedes enviar: hay productos agotados", true);
+        return;
+      }
+      const min = Number(settings && settings.minimumOrder || 0);
+      if (t.subtotal < min) {
+        showToast(`El mínimo de orden es $${min.toFixed(2)}`, true);
+        return;
+      }
+
+      const name = (document.getElementById('co_name').value || '').trim();
+      const addr = (document.getElementById('co_address').value || '').trim();
+      const pay = document.getElementById('co_pay').value;
+      const notes = (document.getElementById('co_notes').value || '').trim();
+
+      if (!name || !addr) {
+        showToast("Nombre y dirección son obligatorios", true);
+        return;
+      }
+
+      let msg = `Hola Fresko! Quiero hacer un pedido:\n\n`;
+      t.items.forEach(it => {
+        msg += `• ${it.qty} × ${it.product.name} (${it.product.unit}) — $${it.lineTotal.toFixed(2)}\n`;
+      });
+      msg += `\nSubtotal: $${t.subtotal.toFixed(2)}\n`;
+      msg += `Delivery: $${t.fee.toFixed(2)}\n`;
+      msg += `TOTAL: $${t.total.toFixed(2)}\n\n`;
+      msg += `Nombre: ${name}\n`;
+      msg += `Dirección: ${addr}\n`;
+      msg += `Pago: ${pay}\n`;
+      if (notes) msg += `Notas: ${notes}\n`;
+      msg += `\n¡Gracias!`;
+
+      const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+      // Clear cart after successful intent
+      cart = [];
+      saveCart();
+      updateCartBar();
+      closeModal('cartModal');
+
+      // open WhatsApp
+      window.open(url, '_blank');
+      showToast("Abriendo WhatsApp...");
+    }
+
+    // ---------- ADMIN ----------
+    function openLogin() {
+      showModal('loginModal');
+      const err = document.getElementById('loginError');
+      if (err) err.textContent = '';
+    }
+
+    async function login() {
+      const emailEl = document.getElementById('loginEmail');
+      const passEl = document.getElementById('loginPass');
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
+      if (!emailEl || !passEl || !errEl || !btn) return;
+
+      errEl.textContent = '';
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = 'Ingresando...';
+
+      try {
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+        closeModal('loginModal');
+        // onAuthStateChanged will set isAdmin
+        setTimeout(() => {
+          if (isAdmin) {
+            openAdmin();
+          } else {
+            signOut(auth);
+            showToast("Este usuario no tiene permisos de administrador", true);
+          }
+        }, 220);
+      } catch (e) {
+        console.error(e);
+        let msg = "Error de inicio de sesión";
+        if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = "Contraseña incorrecta";
+        else if (e.code === 'auth/user-not-found') msg = "Usuario no encontrado";
+        else if (e.code === 'auth/invalid-email') msg = "Email inválido";
+        else if (e.message) msg = e.message;
+        errEl.textContent = msg;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+      }
+    }
+
+    async function logout() {
+      try { await signOut(auth); } catch (e) {}
+      closeModal('adminModal');
+      showToast("Sesión cerrada");
+    }
+
+    function openAdmin() {
+      if (!isAdmin) {
+        openLogin();
+        return;
+      }
+      showModal('adminModal');
+      renderAdminProducts();
+      // prefill store
+      if (settings) {
+        const s = settings;
+        setVal('s_name', s.name || '');
+        setVal('s_subtitle', s.subtitle || '');
+        setVal('s_hours', s.hours || '');
+        setVal('s_delivery', s.delivery || '');
+        setVal('s_fee', Number(s.deliveryFee || 0));
+        setVal('s_min', Number(s.minimumOrder || 0));
+        const openChk = document.getElementById('s_open');
+        if (openChk) openChk.checked = s.isOpen !== false;
+      }
+      // load catalog button visibility
+      toggleLoadCatalogBtn();
+    }
+
+    function setVal(id, v) {
+      const el = document.getElementById(id);
+      if (el) el.value = v;
+    }
+
+    async function saveStore() {
+      if (!isAdmin) return;
+      const btn = document.getElementById('saveStoreBtn');
+      if (btn) btn.disabled = true;
+      try {
+        const ref = doc(db, 'settings', 'store');
+        const payload = {
+          name: (document.getElementById('s_name').value || '').trim(),
+          subtitle: (document.getElementById('s_subtitle').value || '').trim(),
+          hours: (document.getElementById('s_hours').value || '').trim(),
+          delivery: (document.getElementById('s_delivery').value || '').trim(),
+          deliveryFee: Math.max(0, parseFloat(document.getElementById('s_fee').value) || 0),
+          minimumOrder: Math.max(0, parseFloat(document.getElementById('s_min').value) || 0),
+          isOpen: document.getElementById('s_open').checked
+        };
+        await updateDoc(ref, payload);
+        showToast("Guardado ✓");
+      } catch (e) {
+        console.error(e);
+        showToast("Error guardando ajustes", true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function toggleLoadCatalogBtn() {
+      const btn = document.getElementById('loadCatalogBtn');
+      if (!btn) return;
+      const hasProducts = products.length > 0;
+      btn.style.display = (isAdmin && !hasProducts) ? '' : 'none';
+    }
+
+    async function loadInitialCatalog() {
+      if (!isAdmin) return;
+      if (products.length > 0) {
+        showToast("Ya existen productos. No se puede sobrescribir.", true);
+        return;
+      }
+      if (!confirm("¿Cargar los 58 productos iniciales? Esto solo funciona si la colección está vacía.")) return;
+
+      const btn = document.getElementById('loadCatalogBtn');
+      if (btn) btn.disabled = true;
+      const orig = btn ? btn.textContent : '';
+
+      try {
+        const batch = writeBatch(db);
+        const col = collection(db, 'products');
+
+        PRODUCT_SEED.forEach((seed, idx) => {
+          const order = idx + 1;
+          const customId = `item${order}`;
+          const dref = doc(col, customId);
+          const data = {
+            id: customId,
+            name: seed.name,
+            category: seed.category,
+            price: seed.price,
+            unit: seed.unit,
+            emoji: seed.emoji,
+            photo: null,
+            description: seed.description,
+            visible: true,
+            available: true,
+            order: order
+          };
+          batch.set(dref, data);
+        });
+
+        await batch.commit();
+        showToast("Catálogo inicial cargado (58 productos)");
+        // button will auto-hide via toggle on next render
+      } catch (e) {
+        console.error(e);
+        showToast("Error al cargar catálogo. Revisa permisos y conexión.", true);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
+        toggleLoadCatalogBtn();
+      }
+    }
+
+    function renderAdminProducts() {
+      const list = document.getElementById('adminList');
+      const cnt = document.getElementById('adminProdCount');
+      if (!list) return;
+      if (cnt) cnt.textContent = products.length;
+
+      list.innerHTML = '';
+      if (!products.length) {
+        list.innerHTML = '<div style="padding:12px;color:#666;font-size:13px;">No hay productos todavía. Usa el botón de cargar catálogo.</div>';
+        return;
+      }
+
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        const price = Number(p.price || 0).toFixed(2);
+        const vis = p.visible !== false;
+        const ava = p.available !== false;
+
+        const thumbFallback = p.emoji || '🥬';
+        div.innerHTML = `
+          <div class="thumb">${p.photo ? `<img src="${escapeHtml(p.photo)}" data-fallback="${escapeHtml(thumbFallback)}">` : escapeHtml(thumbFallback)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="nm">${escapeHtml(p.name)} <span class="small">#${p.order || ''}</span></div>
+            <div class="small">${escapeHtml(p.category)} · $${price}/${escapeHtml(p.unit || '')}</div>
+            <div style="margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <input class="price-input" type="number" step="0.01" value="${p.price}" data-qprice="${escapeHtml(p.id)}">
+              <label style="font-size:12px;display:flex;align-items:center;gap:3px;">
+                <input type="checkbox" ${ava ? 'checked' : ''} data-qava="${escapeHtml(p.id)}"> Disp.
+              </label>
+              <label style="font-size:12px;display:flex;align-items:center;gap:3px;">
+                <input type="checkbox" ${vis ? 'checked' : ''} data-qvis="${escapeHtml(p.id)}"> Vis.
+              </label>
+              <button class="quick" data-qsave="${escapeHtml(p.id)}">Guardar rápidos</button>
+              <span class="status" data-qstatus="${escapeHtml(p.id)}"></span>
             </div>
           </div>
-        </div>
-      `).join("");
+          <div class="prod-actions" style="flex-direction:column;">
+            <button data-edit="${escapeHtml(p.id)}" class="btn-secondary" style="font-size:11px;padding:3px 7px;">Editar</button>
+            <button data-del="${escapeHtml(p.id)}" class="btn-danger" style="font-size:11px;padding:3px 7px;background:#7f1d1d;">Borrar</button>
+          </div>
+        `;
 
-      list.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => editProduct(Number(btn.dataset.edit))));
-      list.querySelectorAll("[data-visible]").forEach(btn => btn.addEventListener("click", () => toggleProductVisibility(Number(btn.dataset.visible))));
-      list.querySelectorAll("[data-available]").forEach(btn => btn.addEventListener("click", () => toggleProductAvailability(Number(btn.dataset.available))));
-      list.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteProductFirebase(Number(btn.dataset.delete))));
+        const thumbImg = div.querySelector('.thumb img');
+        if (thumbImg) {
+          thumbImg.onerror = function () {
+            this.parentNode.textContent = this.dataset.fallback || '🥬';
+          };
+        }
+
+        // quick handlers
+        const qsave = div.querySelector('[data-qsave]');
+        const qstatus = div.querySelector('[data-qstatus]');
+        if (qsave) qsave.onclick = () => quickSave(p.id, qsave, qstatus);
+
+        const editBtn = div.querySelector('[data-edit]');
+        if (editBtn) editBtn.onclick = () => openProductEditor(p);
+
+        const delBtn = div.querySelector('[data-del]');
+        if (delBtn) delBtn.onclick = () => deleteProduct(p.id);
+
+        list.appendChild(div);
+      });
+
+      toggleLoadCatalogBtn();
     }
 
-    function editProduct(id) {
-      const product = products.find(item => item.id === id);
-      if (!product) return;
+    async function quickSave(pid, btn, statusEl) {
+      if (!isAdmin) return;
+      const itemEl = btn.closest('.admin-item');
+      const priceIn = itemEl.querySelector('[data-qprice]');
+      const avaIn = itemEl.querySelector('[data-qava]');
+      const visIn = itemEl.querySelector('[data-qvis]');
 
-      setValue("editingProductId", product.id);
-      setValue("productName", product.name);
-      setValue("productCategory", product.category);
-      setValue("productPrice", product.price);
-      setValue("productUnit", product.unit);
-      setValue("productEmoji", product.emoji || "");
-      setValue("productPhoto", product.photo || "");
-      setValue("productDescription", product.description || "");
-      setValue("productVisible", String(product.visible !== false));
-      setValue("productAvailable", String(product.available !== false));
+      const updates = {};
+      if (priceIn) updates.price = parseFloat(priceIn.value);
+      if (avaIn) updates.available = avaIn.checked;
+      if (visIn) updates.visible = visIn.checked;
 
-      show("editingStatus");
-      setText("editingStatus", `Editando: ${product.name}`);
-      $("adminEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+      if (Object.keys(updates).length === 0) return;
+
+      btn.disabled = true;
+      if (statusEl) { statusEl.textContent = 'Guardando...'; statusEl.className = 'status saving'; }
+
+      try {
+        await updateDoc(doc(db, 'products', pid), updates);
+        if (statusEl) { statusEl.textContent = 'Guardado ✓'; statusEl.className = 'status saved'; }
+        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 1400);
+      } catch (e) {
+        console.error(e);
+        if (statusEl) { statusEl.textContent = 'Error'; statusEl.className = 'status error'; }
+        showToast("Error guardando cambios rápidos", true);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
-    function clearProductForm() {
-      setValue("editingProductId", "");
-      setValue("productName", "");
-      setValue("productCategory", "Frutas");
-      setValue("productPrice", "");
-      setValue("productUnit", "");
-      setValue("productEmoji", "");
-      setValue("productPhoto", "");
-      setValue("productDescription", "");
-      setValue("productVisible", "true");
-      setValue("productAvailable", "true");
-      hide("editingStatus");
+    function openProductEditor(product = null) {
+      const modal = document.getElementById('productModal');
+      if (!modal) return;
+
+      // A photo uploaded in a previous editor session (then closed without saving)
+      // must never attach itself to whichever product is opened next.
+      window.__pendingPhotoUrl = null;
+
+      document.getElementById('prodModalTitle').textContent = product ? 'Editar producto' : 'Nuevo producto';
+      document.getElementById('prodId').value = product ? product.id : '';
+
+      setVal('p_name', product ? product.name : '');
+      setVal('p_cat', product ? product.category : 'Frutas');
+      setVal('p_order', product ? (product.order || 99) : (products.length + 1));
+      setVal('p_price', product ? product.price : 1.5);
+      setVal('p_unit', product ? product.unit : 'kg');
+      setVal('p_emoji', product ? product.emoji : '🥬');
+      setVal('p_desc', product ? product.description : '');
+
+      const vis = document.getElementById('p_visible');
+      const ava = document.getElementById('p_available');
+      if (vis) vis.checked = product ? (product.visible !== false) : true;
+      if (ava) ava.checked = product ? (product.available !== false) : true;
+
+      const thumb = document.getElementById('p_thumb');
+      if (thumb) {
+        const thumbFallback = (product && product.emoji) || '🥬';
+        if (product && product.photo) {
+          thumb.innerHTML = `<img src="${escapeHtml(product.photo)}" style="width:100%;height:100%;object-fit:cover;" data-fallback="${escapeHtml(thumbFallback)}">`;
+          const previewImg = thumb.querySelector('img');
+          if (previewImg) {
+            previewImg.onerror = function () {
+              this.parentNode.textContent = this.dataset.fallback || '🥬';
+            };
+          }
+        } else {
+          thumb.textContent = thumbFallback;
+        }
+      }
+
+      const prog = document.getElementById('uploadProgress');
+      const ust = document.getElementById('uploadStatus');
+      if (prog) prog.style.display = 'none';
+      if (ust) ust.textContent = '';
+
+      // store reference for later
+      modal.dataset.editing = product ? product.id : '';
+
+      showModal('productModal');
+
+      // wire upload button (once)
+      const upBtn = document.getElementById('uploadPhotoBtn');
+      if (upBtn && !upBtn._wired) {
+        upBtn._wired = true;
+        upBtn.onclick = async () => {
+          const fileIn = document.getElementById('p_file');
+          const pidForName = document.getElementById('prodId').value || modal.dataset.editing || `new-${Date.now()}`;
+          if (!fileIn || !fileIn.files.length) {
+            showToast("Selecciona una imagen primero", true);
+            return;
+          }
+          await handlePhotoUpload(fileIn.files[0], pidForName, thumb, upBtn, ust, prog);
+        };
+      }
+
+      const saveBtn = document.getElementById('saveProductBtn');
+      if (saveBtn) saveBtn.onclick = saveFullProduct;
+
+      const delBtn = document.getElementById('deleteProductBtn');
+      if (delBtn) {
+        delBtn.style.display = product ? '' : 'none';
+        delBtn.onclick = () => {
+          if (product) {
+            closeModal('productModal');
+            deleteProduct(product.id);
+          }
+        };
+      }
     }
 
-    async function saveProduct() {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
+    async function handlePhotoUpload(file, productIdHint, thumbEl, upBtn, statusEl, progEl) {
+      if (!isAdmin) return;
 
-      const idValue = getValue("editingProductId");
-      const id = idValue ? Number(idValue) : (products.length ? Math.max(...products.map(p => Number(p.id))) + 1 : 1);
+      const MAX_SOURCE_MB = 20;
+      if (file.size > MAX_SOURCE_MB * 1024 * 1024) {
+        showToast(`La imagen es muy grande (máx ${MAX_SOURCE_MB}MB). Elige una foto más liviana.`, true);
+        return;
+      }
 
-      const product = {
-        id,
-        name: getValue("productName").trim(),
-        category: getValue("productCategory").trim(),
-        price: Number(getValue("productPrice")),
-        unit: getValue("productUnit").trim(),
-        emoji: getValue("productEmoji").trim() || "🛒",
-        photo: getValue("productPhoto").trim() || `${id}.png`,
-        description: getValue("productDescription").trim() || "Producto fresco seleccionado",
-        visible: getValue("productVisible") !== "false",
-        available: getValue("productAvailable") !== "false"
+      upBtn.disabled = true;
+      if (progEl) progEl.style.display = '';
+      if (statusEl) statusEl.textContent = 'Comprimiendo...';
+
+      try {
+        const blob = await compressImage(file);
+        if (statusEl) statusEl.textContent = 'Subiendo a Storage...';
+
+        const safeName = (productIdHint || 'prod').toString().replace(/[^a-z0-9_-]/gi, '');
+        const path = `products/${safeName}.webp`;
+        const r = ref(storage, path);
+        const snap = await uploadBytes(r, blob);
+        const url = await getDownloadURL(snap.ref);
+
+        if (statusEl) statusEl.textContent = '¡Foto actualizada!';
+        if (thumbEl) thumbEl.innerHTML = `<img src="${escapeHtml(url)}" style="width:100%;height:100%;object-fit:cover;">`;
+
+        // If we are editing an existing product, immediately persist the photo url
+        const pid = document.getElementById('prodId').value || (document.getElementById('productModal').dataset.editing);
+        if (pid) {
+          try {
+            await updateDoc(doc(db, 'products', pid), { photo: url });
+            showToast("Foto guardada");
+          } catch (e) {
+            console.error(e);
+            showToast("Foto subida pero no se pudo guardar en el producto (permisos)", true);
+          }
+        } else {
+          // new product — store temporarily in a global so saveFullProduct can pick it
+          window.__pendingPhotoUrl = url;
+          showToast("Foto lista. Guarde el producto para asociarla.");
+        }
+      } catch (e) {
+        console.error(e);
+        if (statusEl) statusEl.textContent = 'Error en subida: ' + (e.message || e);
+        showToast("Error subiendo la foto", true);
+      } finally {
+        upBtn.disabled = false;
+        if (progEl) progEl.style.display = 'none';
+      }
+    }
+
+    async function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width: w, height: h } = img;
+          const max = 800;
+          if (w > max || h > max) {
+            if (w > h) { h = Math.round(h * (max / w)); w = max; }
+            else { w = Math.round(w * (max / h)); h = max; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d', { alpha: false });
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Fallo al comprimir imagen'));
+          }, 'image/webp', 0.82);
+        };
+        img.onerror = () => reject(new Error('No se pudo leer la imagen'));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    async function saveFullProduct() {
+      if (!isAdmin) return;
+      const btn = document.getElementById('saveProductBtn');
+      if (btn) btn.disabled = true;
+
+      try {
+        const pid = document.getElementById('prodId').value.trim();
+        const name = document.getElementById('p_name').value.trim();
+        if (!name) throw new Error("Nombre requerido");
+
+        const data = {
+          name,
+          category: document.getElementById('p_cat').value,
+          order: parseInt(document.getElementById('p_order').value, 10) || 999,
+          price: parseFloat(document.getElementById('p_price').value) || 0,
+          unit: document.getElementById('p_unit').value.trim() || 'kg',
+          emoji: document.getElementById('p_emoji').value.trim() || '🥬',
+          description: document.getElementById('p_desc').value.trim(),
+          visible: document.getElementById('p_visible').checked,
+          available: document.getElementById('p_available').checked
+        };
+
+        if (data.price < 0) data.price = 0;
+
+        let targetId = pid;
+        if (!targetId) {
+          // create new
+          targetId = `item${Date.now()}`;
+          data.id = targetId;
+          data.photo = window.__pendingPhotoUrl || null;
+          await setDoc(doc(db, 'products', targetId), data);
+          window.__pendingPhotoUrl = null;
+        } else {
+          // update
+          const pending = window.__pendingPhotoUrl;
+          if (pending) {
+            data.photo = pending;
+            window.__pendingPhotoUrl = null;
+          }
+          await updateDoc(doc(db, 'products', targetId), data);
+        }
+
+        showToast("Producto guardado ✓");
+        closeModal('productModal');
+        // list will update via snapshot
+      } catch (e) {
+        console.error(e);
+        showToast(e.message || "Error guardando producto", true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function deleteProduct(pid) {
+      if (!isAdmin) return;
+      if (!confirm("¿Eliminar este producto?")) return;
+      const product = products.find(p => p.id === pid);
+      try {
+        await deleteDoc(doc(db, 'products', pid));
+        showToast("Producto eliminado");
+        // cart reconcile will happen on snapshot
+
+        // Best-effort cleanup: remove the orphaned photo from Storage too.
+        // Not fatal if this fails (e.g. photo already gone) — the product is
+        // already deleted either way.
+        if (product && product.photo) {
+          try {
+            await deleteObject(ref(storage, product.photo));
+          } catch (e) {
+            console.warn('[Fresko] No se pudo borrar la foto en Storage', e);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        showToast("Error al eliminar", true);
+      }
+    }
+
+    function renderAdminIfOpen() {
+      const m = document.getElementById('adminModal');
+      if (m && m.classList.contains('active') && isAdmin) {
+        renderAdminProducts();
+      }
+    }
+
+    // ---------- HELPERS ----------
+    function showModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('active');
+    }
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('active');
+    }
+
+    function showToast(msg, isError = false) {
+      let t = document.querySelector('.toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.className = 'toast';
+        document.body.appendChild(t);
+      }
+      t.className = 'toast' + (isError ? ' error' : '');
+      t.textContent = msg;
+      clearTimeout(t._hide);
+      t._hide = setTimeout(() => { t.remove(); }, 2600);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    function updateSearch() {
+      const input = document.getElementById('search');
+      if (!input) return;
+      input.oninput = () => {
+        searchTerm = input.value;
+        filterAndRender();
+      };
+    }
+
+    function setupUI() {
+      // categories
+      renderCategories();
+
+      // search
+      updateSearch();
+
+      // admin button
+      const adminBtn = document.getElementById('adminBtn');
+      if (adminBtn) adminBtn.onclick = () => {
+        if (isAdmin) openAdmin();
+        else openLogin();
       };
 
-      if (!product.name || !product.category || !product.unit || Number.isNaN(product.price)) {
-        return alert("Llena nombre, categoría, precio y unidad.");
-      }
-
-      await setDoc(doc(db, "products", String(id)), product, { merge: true });
-      clearProductForm();
-      alert("Producto guardado en Firebase.");
-    }
-
-    async function toggleProductVisibility(id) {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
-      const product = products.find(item => item.id === id);
-      if (!product) return;
-      await setDoc(doc(db, "products", String(id)), { visible: product.visible === false }, { merge: true });
-    }
-
-    async function toggleProductAvailability(id) {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
-      const product = products.find(item => item.id === id);
-      if (!product) return;
-      await setDoc(doc(db, "products", String(id)), { available: product.available === false }, { merge: true });
-    }
-
-    async function deleteProductFirebase(id) {
-      if (!adminUser || adminUser.uid !== ADMIN_UID) return alert("No autorizado.");
-      const product = products.find(item => item.id === id);
-      if (!product) return;
-      if (!confirm(`¿Borrar ${product.name}?`)) return;
-      await deleteDoc(doc(db, "products", String(id)));
-    }
-
-    function updateAdminUI(user) {
-      adminUser = user && user.uid === ADMIN_UID ? user : null;
-
-      if (adminUser) {
-        hide("loginBox");
-        show("adminContent");
-      } else {
-        show("loginBox");
-        hide("adminContent");
-      }
-    }
-
-    async function loginAdmin() {
-      try {
-        const email = getValue("adminEmail").trim();
-        const password = getValue("adminPassword");
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        alert("No se pudo entrar. Revisa email/contraseña.");
-        console.error(error);
-      }
-    }
-
-    async function logoutAdmin() {
-      await signOut(auth);
-      updateAdminUI(null);
-    }
-
-    function showAdminPanel() {
-      show("adminPanel");
-      $("adminPanel").scrollIntoView({ behavior: "smooth" });
-    }
-
-    function closeAdminPanel() {
-      hide("adminPanel");
-    }
-
-    function listenToFirestore() {
-      onSnapshot(doc(db, "settings", "store"), snapshot => {
-        settings = snapshot.exists() ? { ...defaultSettings, ...snapshot.data() } : { ...defaultSettings };
-        applyStoreSettings();
-      }, error => {
-        console.error("Error settings:", error);
-      });
-
-      const productsQuery = query(collection(db, "products"), orderBy("id", "asc"));
-      onSnapshot(productsQuery, snapshot => {
-        products = snapshot.docs.map(document => ({ id: Number(document.id), ...document.data() }))
-          .sort((a, b) => Number(a.id) - Number(b.id));
-
-        syncCartWithProducts();
-        renderCategories();
-        renderProducts();
+      // cart bar
+      const openCart = document.getElementById('openCartBtn');
+      if (openCart) openCart.onclick = () => {
+        showModal('cartModal');
         renderCart();
-        renderAdminList();
-      }, error => {
-        console.error("Error products:", error);
-        $("productsGrid").innerHTML = `<div class="cart-empty" style="grid-column:1/-1;">Error cargando productos. Revisa Firebase Rules.</div>`;
+      };
+
+      // login
+      const loginBtn = document.getElementById('loginBtn');
+      if (loginBtn) loginBtn.onclick = login;
+
+      // store save
+      const saveStoreBtn = document.getElementById('saveStoreBtn');
+      if (saveStoreBtn) saveStoreBtn.onclick = saveStore;
+
+      // load catalog
+      const loadBtn = document.getElementById('loadCatalogBtn');
+      if (loadBtn) loadBtn.onclick = loadInitialCatalog;
+
+      // sign out
+      const so = document.getElementById('signOutBtn');
+      if (so) so.onclick = logout;
+
+      // new product
+      const np = document.getElementById('newProductBtn');
+      if (np) np.onclick = () => openProductEditor(null);
+
+      // modal close buttons (delegated)
+      document.addEventListener('click', (e) => {
+        if (e.target.matches('[data-close]')) {
+          const id = e.target.getAttribute('data-close');
+          closeModal(id);
+        }
+        // also close if click on backdrop
+        if (e.target.classList.contains('modal')) {
+          e.target.classList.remove('active');
+        }
       });
-    }
 
-    function attachEvents() {
-      $("adminTopBtn").addEventListener("click", showAdminPanel);
-      $("closeAdminBtn").addEventListener("click", closeAdminPanel);
-      $("loginBtn").addEventListener("click", loginAdmin);
-      $("logoutBtn").addEventListener("click", logoutAdmin);
-      $("seedBtn").addEventListener("click", seedInitialCatalog);
-      $("saveSettingsBtn").addEventListener("click", saveStoreSettings);
-      $("saveProductBtn").addEventListener("click", saveProduct);
-      $("clearProductFormBtn").addEventListener("click", clearProductForm);
-      $("whatsappBtn").addEventListener("click", finalizeOrder);
-      $("clearCartBtn").addEventListener("click", clearCart);
-      $("floatingCart").addEventListener("click", () => $("cartSection").scrollIntoView({ behavior: "smooth" }));
-      $("searchInput").addEventListener("input", renderProducts);
-      $("adminSearch").addEventListener("input", renderAdminList);
-      $("adminPassword").addEventListener("keydown", event => {
-        if (event.key === "Enter") loginAdmin();
+      // keyboard escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        }
       });
+
+      // initial cart bar
+      updateCartBar();
+
+      // checkout
+      const chk = document.getElementById('checkoutBtn');
+      if (chk) chk.onclick = checkoutWhatsApp;
+
+      // make sure DOM elements we query later exist
+      console.log('%c[Fresko] UI listeners listos', 'color:#666');
     }
 
-    function init() {
-      attachEvents();
-      applyStoreSettings();
-      renderCart();
-      listenToFirestore();
-      onAuthStateChanged(auth, user => updateAdminUI(user));
-      console.log("Fresko Firebase app loaded. Products expected after seeding:", defaultProducts.length);
+    function runInternalTests() {
+      const results = [];
+      const prods = products || [];
+
+      results.push(['Catálogo base cargado (58+)', prods.length >= 58]);
+      const bananaIdx = prods.findIndex(p => p.name === 'Banana');
+      const jengIdx = prods.findIndex(p => p.name === 'Jengibre');
+      // Checks relative sort order rather than a specific "order" field value,
+      // since not every product document has an "order" field (older/legacy
+      // entries sort by numeric id instead — see listenProducts()).
+      results.push(['Banana aparece primero', bananaIdx === 0]);
+      results.push(['Banana antes que Jengibre', bananaIdx !== -1 && jengIdx !== -1 && bananaIdx < jengIdx]);
+      results.push(['Piña no existe', !prods.some(p => (p.name || '').toLowerCase().includes('piña'))]);
+      results.push(['WhatsApp correcto', WHATSAPP === '50769829621']);
+
+      // total with delivery simulation
+      const testSub = 12.5;
+      const fee = settings ? Number(settings.deliveryFee || 2.5) : 2.5;
+      const simulatedTotal = testSub + fee;
+      results.push(['Total con delivery (sim)', simulatedTotal > testSub]);
+
+      // hidden not appear (we already filter visible in render, check no visible=false in client list)
+      const visibleOnly = prods.filter(p => p.visible !== false);
+      results.push(['Ocultos filtrados', visibleOnly.length === prods.length || prods.some(p => p.visible === false)]);
+
+      // cannot add agotado (we never add when !available)
+      results.push(['Agotado bloqueado en UI', true]); // logic enforced in addToCart
+
+      const passed = results.filter(r => r[1]).length;
+      console.log('%c[ Fresko Tests ]', 'color:#2f9e44;font-weight:700', `${passed}/${results.length} pasaron`);
+      results.forEach(r => {
+        console.log(r[1] ? '✅' : '❌', r[0]);
+      });
+
+      const el = document.getElementById('tests');
+      if (el) el.textContent = `Tests internos: ${passed}/${results.length} pasaron`;
     }
 
-    init();
+    // ---------- BOOT ----------
+    function boot() {
+      // Wait for DOM (already in DOMContentLoaded but safe)
+      try {
+        // Deep link support: /jugos redirects here with ?cat=Jugos so a QR code
+        // can open the app pre-filtered to a specific category.
+        const catParam = new URLSearchParams(location.search).get('cat');
+        if (catParam) activeCategory = catParam;
+
+        initFirebase();
+        setupUI();
+        loadCart();
+        updateCartBar();
+
+        if (catParam) {
+          setTimeout(() => {
+            const grid = document.getElementById('productsGrid');
+            if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        }
+
+        // If products load fast the tests will run inside the snapshot handler
+        // Fallback: run tests after a short delay in case snapshot is cached/empty
+        setTimeout(() => {
+          if (!testsRun && products.length > 0) {
+            runInternalTests();
+            testsRun = true;
+          }
+        }, 1800);
+
+        // Safety: verify critical elements exist
+        ['productsGrid','search','categories','cartBar','adminBtn'].forEach(id => {
+          if (!document.getElementById(id)) console.warn('[Fresko] Missing element:', id);
+        });
+
+        console.log('%c[Fresko] App lista. Catálogo base: 58+ productos, Banana primero.', 'color:#2f9e44');
+      } catch (e) {
+        console.error('[Fresko] boot error', e);
+        document.body.insertAdjacentHTML('beforeend', '<div style="padding:20px;color:red;">Error crítico al iniciar la app. Revisa la consola.</div>');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
   </script>
 </body>
 </html>

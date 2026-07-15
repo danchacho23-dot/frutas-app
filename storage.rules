@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Public read for product images
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == 'gDK9Zay7iwSDh2dCdLdzXuR30PB2';
+    }
+
+    // Block all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
