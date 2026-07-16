@@ -266,7 +266,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
@@ -355,12 +355,18 @@
     let settingsUnsub = null;
     let testsRun = false;
 
-    function initFirebase() {
+    async function initFirebase() {
       try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
         storage = getStorage(app);
+
+        // Tie the admin session to this browser tab/window instead of the
+        // Firebase default (persists indefinitely on the device until an
+        // explicit "Cerrar sesión"). Each new browser session now requires
+        // logging in again.
+        await setPersistence(auth, browserSessionPersistence);
 
         onAuthStateChanged(auth, (user) => {
           currentUser = user;
