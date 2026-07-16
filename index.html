@@ -399,7 +399,10 @@
         products = [];
         snap.forEach(d => {
           const data = d.data();
-          products.push({ id: d.id, ...data });
+          // Spread data first: some legacy documents have their own numeric
+          // "id" field, which must never shadow the real (string) Firestore
+          // document ID that deleteDoc()/updateDoc() actually need.
+          products.push({ ...data, id: d.id });
         });
         products.sort((a, b) => {
           const ao = a.order ?? Number(a.id) ?? 9999;
