@@ -775,10 +775,17 @@
       msg += `\n¡Gracias!`;
 
       const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-      // Clear cart after successful intent
+      // Clear cart and the checkout form after successful intent, so the
+      // next visit (or the next order right after) starts from a clean slate
+      // instead of showing this order's leftover items/details.
       cart = [];
       saveCart();
       updateCartBar();
+      document.getElementById('co_name').value = '';
+      document.getElementById('co_address').value = '';
+      document.getElementById('co_pay').value = 'Efectivo';
+      document.getElementById('co_notes').value = '';
+      renderCart();
       closeModal('cartModal');
 
       // open WhatsApp
