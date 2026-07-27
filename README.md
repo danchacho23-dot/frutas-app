@@ -168,6 +168,24 @@ Pruebas incluidas:
 }
 ```
 
+**orders/{orderId}** (creado automáticamente al enviar un pedido por WhatsApp)
+```js
+{
+  items: [{ id, name, unit, price, qty, lineTotal }],
+  subtotal: number,
+  deliveryFee: number,
+  total: number,
+  customerName: string,
+  address: string,
+  paymentMethod: string,
+  notes: string | null,
+  storeOpenAtOrder: boolean,
+  status: "sent",
+  createdAt: Timestamp
+}
+```
+Cualquier visitante puede **crear** un pedido (así queda un registro aunque el cliente no complete el envío por WhatsApp), pero solo el admin puede leer, editar o borrar la colección `orders`.
+
 ## Seguridad implementada
 
 - Clientes: solo lectura de `products/*` y `settings/store`
@@ -177,6 +195,7 @@ Pruebas incluidas:
 
 ## Notas importantes
 
+- Cada pedido se guarda en Firestore (`orders`) al momento de tocar "Enviar por WhatsApp", antes de abrir el enlace de wa.me. Así el pedido queda registrado aunque el cliente cierre WhatsApp sin enviarlo. Para revisar pedidos, usa la consola de Firebase (Firestore → `orders`) con la cuenta admin.
 - Carrito se guarda solo en localStorage del navegador.
 - Al recargar productos (onSnapshot) se sincroniza: quita ocultos/borrados, actualiza precios, bloquea checkout si hay agotados.
 - No hay cuentas de cliente, ni pagos online (solo WhatsApp).
