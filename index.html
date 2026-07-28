@@ -77,6 +77,10 @@
     .status.saving { color:#ca8a04; }
     .status.saved { color:#166534; }
     .status.error { color:#b91c1c; }
+    .order-status { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+    .order-status.sent { background:#fef3c7; color:#92400e; }
+    .order-status.fulfilled { background:#dcfce7; color:#166534; }
+    .order-status.cancelled { background:#fee2e2; color:#991b1b; }
     .thumb { width:42px; height:42px; border-radius:8px; background:#f1f5f0; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; overflow:hidden; }
     .thumb img { width:100%; height:100%; object-fit:contain; }
     .toast { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:9px 16px; border-radius:999px; font-size:13px; z-index:200; box-shadow:0 3px 10px rgba(0,0,0,.3); }
@@ -177,6 +181,13 @@
 
       <div id="adminList" class="admin-list"></div>
 
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <strong>Pedidos recientes (<span id="adminOrderCount">0</span>)</strong>
+      </div>
+      <div id="adminOrdersList" class="admin-list"></div>
+
       <div style="margin-top:14px;">
         <button id="signOutBtn" class="btn-danger" style="width:100%;">Cerrar sesión</button>
       </div>
@@ -267,7 +278,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, addDoc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
     const firebaseConfig = {
@@ -348,11 +359,13 @@
     let isAdmin = false;
     let products = [];
     let settings = null;
+    let orders = [];
     let cart = [];
     let activeCategory = "Todos";
     let searchTerm = "";
     let productsUnsub = null;
     let settingsUnsub = null;
+    let ordersUnsub = null;
     let testsRun = false;
 
     async function initFirebase() {
@@ -375,6 +388,15 @@
           if (btn) {
             btn.textContent = isAdmin ? "Admin ✓" : "Admin";
             btn.classList.toggle('admin', isAdmin);
+          }
+          // Orders are only readable by the admin (Firestore rules), so only
+          // subscribe while logged in as admin, and tear down on logout.
+          if (isAdmin) {
+            listenOrders();
+          } else if (ordersUnsub) {
+            ordersUnsub();
+            ordersUnsub = null;
+            orders = [];
           }
           // If admin panel open and lost privileges, close it
           const adminM = document.getElementById('adminModal');
@@ -449,6 +471,18 @@
         renderCart(); // update totals if open
       }, (err) => {
         console.error('[Fresko] settings onSnapshot error', err);
+      });
+    }
+
+    function listenOrders() {
+      if (ordersUnsub) ordersUnsub();
+      const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50));
+      ordersUnsub = onSnapshot(q, (snap) => {
+        orders = [];
+        snap.forEach(d => orders.push({ ...d.data(), id: d.id }));
+        renderAdminIfOpen();
+      }, (err) => {
+        console.error('[Fresko] orders onSnapshot error', err);
       });
     }
 
@@ -886,6 +920,7 @@
       }
       showModal('adminModal');
       renderAdminProducts();
+      renderAdminOrders();
       // prefill store
       if (settings) {
         const s = settings;
@@ -1321,10 +1356,84 @@
       }
     }
 
+    const ORDER_STATUS_LABEL = { sent: 'Pendiente', fulfilled: 'Entregado', cancelled: 'Cancelado' };
+
+    function formatOrderDate(ts) {
+      if (!ts || typeof ts.toDate !== 'function') return '';
+      try {
+        return ts.toDate().toLocaleString('es-PA', { dateStyle: 'short', timeStyle: 'short' });
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function renderAdminOrders() {
+      const list = document.getElementById('adminOrdersList');
+      const cnt = document.getElementById('adminOrderCount');
+      if (!list) return;
+      if (cnt) cnt.textContent = orders.length;
+
+      list.innerHTML = '';
+      if (!orders.length) {
+        list.innerHTML = '<div style="padding:12px;color:#666;font-size:13px;">Todavía no hay pedidos.</div>';
+        return;
+      }
+
+      orders.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'stretch';
+
+        const status = o.status || 'sent';
+        const itemsSummary = (o.items || []).map(it => `${it.qty}× ${escapeHtml(it.name)}`).join(', ');
+        const dateStr = formatOrderDate(o.createdAt);
+
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
+            <div class="nm">${escapeHtml(o.customerName || '')}</div>
+            <div class="small">${escapeHtml(dateStr)}</div>
+          </div>
+          <div class="small">${escapeHtml(o.address || '')}</div>
+          <div class="small">${escapeHtml(o.paymentMethod || '')}${o.notes ? ' · ' + escapeHtml(o.notes) : ''}</div>
+          <div class="small" style="margin:4px 0;">${itemsSummary}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-top:2px;">
+            <strong>$${Number(o.total || 0).toFixed(2)}</strong>
+            <span class="order-status ${escapeHtml(status)}">${escapeHtml(ORDER_STATUS_LABEL[status] || status)}</span>
+          </div>
+          <div class="prod-actions" style="margin-top:6px;">
+            ${status !== 'fulfilled' ? `<button data-order="${escapeHtml(o.id)}" data-status="fulfilled" class="btn-secondary">Marcar entregado</button>` : ''}
+            ${status !== 'cancelled' ? `<button data-order="${escapeHtml(o.id)}" data-status="cancelled" class="btn-danger" style="background:#7f1d1d;">Cancelar</button>` : ''}
+            ${status !== 'sent' ? `<button data-order="${escapeHtml(o.id)}" data-status="sent" class="btn-secondary">Reabrir</button>` : ''}
+          </div>
+        `;
+
+        div.querySelectorAll('[data-order]').forEach(btn => {
+          btn.onclick = () => setOrderStatus(o.id, btn.dataset.status, btn);
+        });
+
+        list.appendChild(div);
+      });
+    }
+
+    async function setOrderStatus(orderId, status, btn) {
+      if (!isAdmin) return;
+      if (btn) btn.disabled = true;
+      try {
+        await updateDoc(doc(db, 'orders', orderId), { status });
+      } catch (e) {
+        console.error(e);
+        showToast("Error actualizando el pedido", true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     function renderAdminIfOpen() {
       const m = document.getElementById('adminModal');
       if (m && m.classList.contains('active') && isAdmin) {
         renderAdminProducts();
+        renderAdminOrders();
       }
     }
 
