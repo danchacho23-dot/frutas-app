@@ -203,6 +203,30 @@ Solo el **dueño** puede leer esta subcolección — los montos en dólares nunc
 ```
 El `ADMIN_UID` configurado en el código siempre es dueño, incluso sin un documento aquí. Para agregar más cuentas (otro dueño, o empleados), crea el usuario en Authentication, copia su UID y crea un documento en `staff` con ese UID como ID del documento. Ver sección "Cuentas de empleados" más abajo.
 
+**customers/{code}** — cuentas de cliente sin login real, solo un código de 6 dígitos que el cliente elige (botón "Mis pedidos"). El documento en sí no guarda nada más que la fecha de creación; su único propósito es reservar el código (Firestore rechaza crear uno que ya exista, así el cliente sabe que debe elegir otro).
+```js
+{
+  createdAt: Timestamp
+}
+```
+
+**customers/{code}/orders/{orderId}** — copia del pedido que ve el propio cliente en "Mis pedidos" (a diferencia de `orders/{orderId}`, esta sí incluye montos en $, porque es su propio dinero).
+```js
+{
+  items: [{ id, name, unit, qty }],
+  customerName: string,
+  address: string,
+  paymentMethod: string,
+  notes: string | null,
+  subtotal: number,
+  deliveryFee: number,
+  total: number,
+  status: "sent" | "fulfilled" | "cancelled",
+  createdAt: Timestamp
+}
+```
+No hay `request.auth` real detrás de esto — el código de 6 dígitos **es** la credencial. Cualquiera que sepa el código exacto puede leer ese pedido (por diseño, para no requerir cuentas/login), pero nadie puede *enumerar* qué códigos existen (no hay lectura pública de `customers/{code}`), y con 1,000,000 de combinaciones posibles, adivinar uno al azar no es práctico sin un script — pero tampoco es imposible. No uses este sistema si el negocio maneja información más sensible que nombre/dirección/pedido.
+
 ## Seguridad implementada
 
 - Clientes: solo lectura de `products/*` y `settings/store`
@@ -227,7 +251,7 @@ Para dar a alguien más el rol de dueño completo, repite el mismo proceso pero 
 - Cada pedido se guarda en Firestore (`orders` + `orders/{id}/financials`) al momento de tocar "Enviar por WhatsApp", antes de abrir el enlace de wa.me. Así el pedido queda registrado aunque el cliente cierre WhatsApp sin enviarlo. Revísalos en el panel Admin (sección "Pedidos recientes") con cualquier cuenta de dueño o empleado.
 - Carrito se guarda solo en localStorage del navegador.
 - Al recargar productos (onSnapshot) se sincroniza: quita ocultos/borrados, actualiza precios, bloquea checkout si hay agotados.
-- No hay cuentas de cliente, ni pagos online (solo WhatsApp).
+- No hay pagos online (solo WhatsApp). Cuentas de cliente opcionales vía código de 6 dígitos ("Mis pedidos") — el cliente lo crea la primera vez, se guarda en su navegador (localStorage), y no es obligatorio para hacer un pedido.
 - No existe "Piña" en el catálogo.
 - Todo usa `try/catch`, botones se deshabilitan durante operaciones, mensajes claros al usuario.
 - Mobile-first, 2 columnas en teléfono, diseño verde fresco.

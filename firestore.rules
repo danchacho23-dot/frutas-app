@@ -42,6 +42,20 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    // The customer's own copy of an order includes $ amounts (it's their own
+    // money, nothing to hide from them), unlike the staff-facing orders/*
+    // document above.
+    function isValidCustomerOrder(data) {
+      return data.keys().hasAll(['items', 'customerName', 'address', 'paymentMethod', 'status', 'createdAt', 'subtotal', 'deliveryFee', 'total'])
+        && data.items is list && data.items.size() > 0 && data.items.size() <= 100
+        && data.customerName is string && data.customerName.size() > 0 && data.customerName.size() <= 200
+        && data.address is string && data.address.size() > 0 && data.address.size() <= 500
+        && data.paymentMethod is string && data.paymentMethod.size() <= 100
+        && data.status == 'sent'
+        && data.subtotal is number && data.deliveryFee is number && data.total is number
+        && data.createdAt == request.time;
+    }
+
     // Public read for products and store settings
     match /products/{productId} {
       allow read: if true;
@@ -77,6 +91,30 @@ service cloud.firestore {
       match /financials/{docId} {
         allow create: if isValidFinancials(request.resource.data);
         allow read, update, delete: if isOwner();
+      }
+    }
+
+    // Customer accounts: no real login, just a 6-digit code the shopper
+    // picks. There's no request.auth to tie this to, so the code itself
+    // is the credential -- Firestore rules grant read access to anyone who
+    // supplies the exact path (i.e. knows the code). 6 digits (1,000,000
+    // combinations) is chosen specifically so this can't be brute-forced
+    // casually, since there's no backend here to add rate-limiting.
+    match /customers/{code} {
+      allow create: if code.matches('^[0-9]{6}$')
+        && request.resource.data.keys().hasOnly(['createdAt'])
+        && request.resource.data.createdAt == request.time;
+      // No public read: exposing "does this code exist" would make it
+      // cheaper to enumerate every valid code before touching orders.
+      allow read, update, delete: if false;
+
+      match /orders/{orderId} {
+        allow create: if isValidCustomerOrder(request.resource.data);
+        allow read: if true;
+        allow update: if isStaff()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['sent', 'fulfilled', 'cancelled'];
+        allow delete: if isOwner();
       }
     }
 

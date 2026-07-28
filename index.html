@@ -67,6 +67,13 @@
     .admin-btn:hover { box-shadow:var(--sh-md); }
     .admin-btn:active { transform:scale(.96); }
     .admin-btn.admin { background:linear-gradient(180deg,var(--green),var(--green-dark)); }
+    .myorders-btn { background:var(--green-50); color:var(--green-darker); border:1px solid var(--green-light); box-shadow:none; }
+    .myorders-btn:hover { background:var(--green-light); }
+    .code-input {
+      width:100%; padding:14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:24px;
+      font-weight:800; letter-spacing:8px; text-align:center; font-variant-numeric:tabular-nums;
+    }
+    .code-input:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px var(--green-light); }
     .order-badge {
       position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px;
       background:#dc2626; color:#fff; font-size:11px; font-weight:800; line-height:18px; text-align:center;
@@ -266,7 +273,10 @@
 <body>
   <header>
     <h1 class="brand"><img src="logo.svg" alt="Fresko Market" class="brand-logo"></h1>
-    <button id="adminBtn" class="admin-btn"><span id="adminBtnLabel">Admin</span><span id="adminOrderBadge" class="order-badge" style="display:none;"></span></button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="myOrdersBtn" class="admin-btn myorders-btn">Mis pedidos</button>
+      <button id="adminBtn" class="admin-btn"><span id="adminBtnLabel">Admin</span><span id="adminOrderBadge" class="order-badge" style="display:none;"></span></button>
+    </div>
   </header>
 
   <main>
@@ -453,6 +463,40 @@
     </div>
   </div>
 
+  <!-- Customer "Mis pedidos" Modal -->
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Mis pedidos</h2>
+        <button class="close" data-close="customerModal">&times;</button>
+      </div>
+
+      <!-- Shown when no code is saved on this device yet -->
+      <div id="custLoginView">
+        <div class="form-row">
+          <label>Ya tengo un código</label>
+          <input id="custCodeInput" class="code-input" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="off">
+        </div>
+        <button id="custLoginBtn" class="btn-green">Ver mis pedidos</button>
+
+        <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+
+        <div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;">¿No tienes un código? Créalo aquí — lo necesitarás para ver tus pedidos la próxima vez.</div>
+        <button id="custCreateBtn" class="btn-secondary" style="width:100%;">Crear código nuevo</button>
+        <div id="custError" style="font-size:12px;color:#b91c1c;margin-top:8px;"></div>
+      </div>
+
+      <!-- Shown once a code is saved on this device -->
+      <div id="custOrdersView" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:13px;color:var(--ink-soft);">Tu código: <strong id="custCodeShown" style="letter-spacing:2px;"></strong></div>
+          <button id="custLogoutBtn" class="btn-secondary" style="width:auto;padding:6px 12px;font-size:12px;">Cambiar código</button>
+        </div>
+        <div id="custOrdersList" class="admin-list"></div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -548,6 +592,8 @@
     let settingsUnsub = null;
     let ordersUnsub = null;
     let financialsUnsub = null;
+    let customerCode = null;
+    let customerOrdersUnsub = null;
     let testsRun = false;
 
     // ADMIN_UID is always treated as owner, even without a staff/{uid} doc,
@@ -952,6 +998,141 @@
       } catch (e) { cart = []; }
     }
 
+    // ---------- CUSTOMER ACCOUNTS (code-based, no real login) ----------
+    // There's no Firebase Auth here on purpose (keeps checkout frictionless
+    // for anonymous shoppers). The 6-digit code is a shared secret: Firestore
+    // rules grant read access to customers/{code}/orders/* to anyone who
+    // supplies that exact path, so knowing the code IS the access control.
+    // That's why the code is 6 digits (1,000,000 combinations) rather than 4.
+    function loadCustomerCode() {
+      try {
+        customerCode = localStorage.getItem('fresko_customer_code') || null;
+      } catch (e) {
+        customerCode = null;
+      }
+    }
+
+    function saveCustomerCode(code) {
+      customerCode = code;
+      try { localStorage.setItem('fresko_customer_code', code); } catch (e) {}
+    }
+
+    function clearCustomerCode() {
+      customerCode = null;
+      try { localStorage.removeItem('fresko_customer_code'); } catch (e) {}
+      if (customerOrdersUnsub) { customerOrdersUnsub(); customerOrdersUnsub = null; }
+    }
+
+    function openCustomerModal() {
+      showModal('customerModal');
+      renderCustomerModalView();
+    }
+
+    function renderCustomerModalView() {
+      const loginView = document.getElementById('custLoginView');
+      const ordersView = document.getElementById('custOrdersView');
+      if (!loginView || !ordersView) return;
+      if (customerCode) {
+        loginView.classList.add('hidden');
+        ordersView.classList.remove('hidden');
+        const shown = document.getElementById('custCodeShown');
+        if (shown) shown.textContent = customerCode;
+        listenCustomerOrders();
+      } else {
+        loginView.classList.remove('hidden');
+        ordersView.classList.add('hidden');
+        const err = document.getElementById('custError');
+        if (err) err.textContent = '';
+        const input = document.getElementById('custCodeInput');
+        if (input) input.value = '';
+      }
+    }
+
+    function listenCustomerOrders() {
+      if (customerOrdersUnsub) customerOrdersUnsub();
+      if (!customerCode || !db) return;
+      const q = query(collection(db, 'customers', customerCode, 'orders'), orderBy('createdAt', 'desc'), limit(50));
+      customerOrdersUnsub = onSnapshot(q, (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ ...d.data(), id: d.id }));
+        renderCustomerOrders(list);
+      }, (err) => {
+        console.error('[Fresko] customer orders onSnapshot error', err);
+      });
+    }
+
+    function renderCustomerOrders(list) {
+      const el = document.getElementById('custOrdersList');
+      if (!el) return;
+      el.innerHTML = '';
+      if (!list.length) {
+        el.innerHTML = '<div style="padding:12px;color:#666;font-size:13px;">Todavía no tienes pedidos con este código.</div>';
+        return;
+      }
+      list.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'stretch';
+        const status = o.status || 'sent';
+        const itemsSummary = (o.items || []).map(it => `${it.qty}× ${escapeHtml(it.name)}`).join(', ');
+        const dateStr = formatOrderDate(o.createdAt);
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
+            <div class="small">${escapeHtml(dateStr)}</div>
+            <span class="order-status ${escapeHtml(status)}">${escapeHtml(ORDER_STATUS_LABEL[status] || status)}</span>
+          </div>
+          <div class="small" style="margin:4px 0;">${itemsSummary}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="small">${escapeHtml(o.address || '')}</span>
+            <strong>$${Number(o.total || 0).toFixed(2)}</strong>
+          </div>
+        `;
+        el.appendChild(div);
+      });
+    }
+
+    function customerLogin() {
+      const input = document.getElementById('custCodeInput');
+      const err = document.getElementById('custError');
+      const code = ((input && input.value) || '').trim();
+      if (err) err.textContent = '';
+      if (!/^[0-9]{6}$/.test(code)) {
+        if (err) err.textContent = 'El código debe tener 6 números.';
+        return;
+      }
+      saveCustomerCode(code);
+      renderCustomerModalView();
+    }
+
+    async function customerCreateCode() {
+      const input = document.getElementById('custCodeInput');
+      const err = document.getElementById('custError');
+      const btn = document.getElementById('custCreateBtn');
+      const code = ((input && input.value) || '').trim();
+      if (err) err.textContent = '';
+      if (!/^[0-9]{6}$/.test(code)) {
+        if (err) err.textContent = 'Escribe 6 números para tu código.';
+        return;
+      }
+      if (btn) btn.disabled = true;
+      try {
+        await setDoc(doc(db, 'customers', code), { createdAt: serverTimestamp() });
+        saveCustomerCode(code);
+        renderCustomerModalView();
+      } catch (e) {
+        console.error(e);
+        if (err) err.textContent = 'Ese código ya está en uso. Prueba con otro.';
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function customerLogout() {
+      clearCustomerCode();
+      renderCustomerModalView();
+    }
+
     function reconcileCart() {
       let changed = false;
       const before = cart.length;
@@ -1179,6 +1360,7 @@
         paymentMethod: extra.pay,
         notes: extra.notes || null,
         storeOpenAtOrder: !!extra.isOpen,
+        customerCode: customerCode || null,
         status: 'sent',
         createdAt: serverTimestamp()
       };
@@ -1198,6 +1380,28 @@
       const batch = writeBatch(db);
       batch.set(orderRef, orderData);
       batch.set(doc(collection(orderRef, 'financials'), 'summary'), financialsData);
+      // Customer's own copy (full data, including $) lives under their code
+      // so they can look up "my orders" without any account/login system —
+      // only written if they've created/entered a code this session.
+      if (customerCode) {
+        batch.set(doc(db, 'customers', customerCode, 'orders', orderRef.id), {
+          items: totals.items.map(it => ({
+            id: it.id,
+            name: it.product.name,
+            unit: it.product.unit,
+            qty: it.qty
+          })),
+          customerName: extra.name,
+          address: extra.addr,
+          paymentMethod: extra.pay,
+          notes: extra.notes || null,
+          subtotal: totals.subtotal,
+          deliveryFee: totals.fee,
+          total: totals.total,
+          status: 'sent',
+          createdAt: serverTimestamp()
+        });
+      }
       batch.commit().catch(err => {
         console.error('[Fresko] order save error', err);
       });
@@ -1769,18 +1973,26 @@
         `;
 
         div.querySelectorAll('[data-order]').forEach(btn => {
-          btn.onclick = () => setOrderStatus(o.id, btn.dataset.status, btn);
+          btn.onclick = () => setOrderStatus(o.id, btn.dataset.status, o.customerCode, btn);
         });
 
         list.appendChild(div);
       });
     }
 
-    async function setOrderStatus(orderId, status, btn) {
+    async function setOrderStatus(orderId, status, customerCodeForOrder, btn) {
       if (!isAdmin) return;
       if (btn) btn.disabled = true;
       try {
         await updateDoc(doc(db, 'orders', orderId), { status });
+        // Best-effort: keep the customer's own copy of the order (if any) in
+        // sync so their order history shows live status too. Not fatal if
+        // this fails -- the staff-facing update above already succeeded.
+        if (customerCodeForOrder) {
+          updateDoc(doc(db, 'customers', customerCodeForOrder, 'orders', orderId), { status }).catch(err => {
+            console.error('[Fresko] customer order status sync error', err);
+          });
+        }
       } catch (e) {
         console.error(e);
         showToast("Error actualizando el pedido", true);
@@ -1853,6 +2065,16 @@
         if (isAdmin) openAdmin();
         else openLogin();
       };
+
+      // customer "Mis pedidos" button
+      const myOrdersBtn = document.getElementById('myOrdersBtn');
+      if (myOrdersBtn) myOrdersBtn.onclick = () => openCustomerModal();
+      const custLoginBtn = document.getElementById('custLoginBtn');
+      if (custLoginBtn) custLoginBtn.onclick = () => customerLogin();
+      const custCreateBtn = document.getElementById('custCreateBtn');
+      if (custCreateBtn) custCreateBtn.onclick = () => customerCreateCode();
+      const custLogoutBtn = document.getElementById('custLogoutBtn');
+      if (custLogoutBtn) custLogoutBtn.onclick = () => customerLogout();
 
       // cart bar
       const openCart = document.getElementById('openCartBtn');
@@ -1958,6 +2180,7 @@
         setupUI();
         loadCart();
         updateCartBar();
+        loadCustomerCode();
 
         if (catParam) {
           setTimeout(() => {
