@@ -61,6 +61,22 @@
     }
     @keyframes badgePop { from { transform:scale(.4); opacity:0; } to { transform:scale(1); opacity:1; } }
 
+    .hero3d {
+      position:relative; height:96px; margin-top:14px; border-radius:var(--r-lg); overflow:hidden;
+      background:radial-gradient(ellipse 80% 100% at 50% 115%, var(--green-light), transparent 70%), var(--green-50);
+      border:1px solid var(--line); box-shadow:var(--sh-sm); perspective:600px;
+    }
+    .hero3d .f {
+      position:absolute; left:var(--l); top:var(--t); font-size:var(--s); line-height:1;
+      filter:drop-shadow(0 6px 6px rgba(20,40,20,.16));
+      animation:heroFloat var(--dur) ease-in-out var(--d) infinite, heroSpin var(--spin) linear var(--d) infinite;
+    }
+    @keyframes heroFloat { 0%,100% { margin-top:0; } 50% { margin-top:-12px; } }
+    @keyframes heroSpin { from { transform:rotateY(0deg); } to { transform:rotateY(360deg); } }
+    @media (prefers-reduced-motion:reduce) {
+      .hero3d .f { animation:none; }
+    }
+
     .store-bar {
       background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:14px 16px; margin:14px 0;
       box-shadow:var(--sh-sm);
@@ -242,6 +258,14 @@
   </header>
 
   <main>
+    <div class="hero3d" aria-hidden="true">
+      <span class="f" style="--l:4%;  --t:15%; --s:34px; --d:0s;    --dur:5.5s; --spin:6.5s;">🍌</span>
+      <span class="f" style="--l:20%; --t:52%; --s:44px; --d:.6s;  --dur:6.2s; --spin:8s;">🥑</span>
+      <span class="f" style="--l:38%; --t:8%;  --s:30px; --d:1.2s; --dur:5s;   --spin:7.2s;">🍓</span>
+      <span class="f" style="--l:55%; --t:48%; --s:46px; --d:.3s;  --dur:6.8s; --spin:9s;">🥭</span>
+      <span class="f" style="--l:74%; --t:18%; --s:36px; --d:1.5s; --dur:5.8s; --spin:7.8s;">🍅</span>
+      <span class="f" style="--l:88%; --t:50%; --s:32px; --d:.9s;  --dur:5.3s; --spin:6.9s;">🥬</span>
+    </div>
     <div id="storeInfo" class="store-bar">
       <div class="store-name">Cargando...</div>
       <div class="store-meta"></div>
