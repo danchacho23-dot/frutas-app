@@ -116,6 +116,19 @@
     .card .btn:active { transform:scale(.97); }
     .card .btn:disabled { background:#c3c9c3; box-shadow:none; cursor:not-allowed; }
     .card .agotado { font-size:12px; color:#b91c1c; font-weight:700; text-align:center; margin-top:7px; }
+    .qty-stepper {
+      margin-top:9px; display:flex; align-items:center; justify-content:space-between; gap:6px;
+      background:var(--green-50); border:1px solid var(--green-light); border-radius:var(--r-md);
+      padding:4px; box-shadow:var(--sh-sm);
+    }
+    .qty-stepper button {
+      width:32px; height:32px; flex-shrink:0; border:0; border-radius:var(--r-sm); background:#fff; color:var(--green-darker);
+      font-size:18px; font-weight:800; line-height:1; cursor:pointer; box-shadow:var(--sh-sm);
+      transition:transform .12s var(--ease), background-color .12s var(--ease);
+    }
+    .qty-stepper button:hover { background:var(--green-light); }
+    .qty-stepper button:active { transform:scale(.9); }
+    .qty-stepper span { font-weight:800; font-size:15px; color:var(--ink); min-width:20px; text-align:center; }
     .empty { text-align:center; padding:48px 20px; color:var(--ink-faint); }
 
     .cart-bar {
@@ -801,6 +814,9 @@
           mediaHTML = escapeHtml(fallbackEmoji);
         }
 
+        const cartItem = cart.find(c => c.id === p.id);
+        const qtyInCart = cartItem ? Number(cartItem.qty || 0) : 0;
+
         card.innerHTML = `
           <div class="media">${mediaHTML}</div>
           <div class="info">
@@ -813,7 +829,13 @@
               </div>
             </div>
             ${avail
-              ? `<button class="btn" data-add="${escapeHtml(p.id)}">Agregar</button>`
+              ? (qtyInCart > 0
+                  ? `<div class="qty-stepper">
+                       <button data-dec="${escapeHtml(p.id)}" aria-label="Quitar uno">−</button>
+                       <span>${qtyInCart}</span>
+                       <button data-inc="${escapeHtml(p.id)}" aria-label="Agregar uno">+</button>
+                     </div>`
+                  : `<button class="btn" data-add="${escapeHtml(p.id)}">Agregar</button>`)
               : `<div class="agotado">AGOTADO</div>`
             }
           </div>
@@ -825,8 +847,15 @@
           };
         }
         if (avail) {
-          const btn = card.querySelector('[data-add]');
-          if (btn) btn.onclick = () => addToCart(p.id);
+          if (qtyInCart > 0) {
+            const decBtn = card.querySelector('[data-dec]');
+            const incBtn = card.querySelector('[data-inc]');
+            if (decBtn) decBtn.onclick = () => decFromCard(p.id);
+            if (incBtn) incBtn.onclick = () => addToCart(p.id);
+          } else {
+            const btn = card.querySelector('[data-add]');
+            if (btn) btn.onclick = () => addToCart(p.id);
+          }
         }
         grid.appendChild(card);
       });
@@ -846,6 +875,7 @@
       }
       saveCart();
       updateCartBar();
+      filterAndRender(); // refresh the card into its quantity-stepper state
       showToast(`${p.name} agregado`);
       // Small animation hint
       const bar = document.getElementById('cartBar');
@@ -854,6 +884,24 @@
         bar.style.transform = 'scale(1.02)';
         setTimeout(() => { bar.style.transform = ''; }, 120);
       }
+      // if cart modal is open, keep it in sync too
+      const cm = document.getElementById('cartModal');
+      if (cm && cm.classList.contains('active')) renderCart();
+    }
+
+    function decFromCard(id) {
+      const item = cart.find(c => c.id === id);
+      if (!item) return;
+      if ((item.qty || 1) <= 1) {
+        cart = cart.filter(c => c.id !== id);
+      } else {
+        item.qty -= 1;
+      }
+      saveCart();
+      updateCartBar();
+      filterAndRender();
+      const cm = document.getElementById('cartModal');
+      if (cm && cm.classList.contains('active')) renderCart();
     }
 
     function saveCart() {
