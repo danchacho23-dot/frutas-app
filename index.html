@@ -22,8 +22,9 @@
     main { max-width:1100px; margin:0 auto; padding:12px 12px 90px; }
     header { background:#fff; border-bottom:1px solid #eee; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
     h1 { margin:0; font-size:26px; color:var(--green); letter-spacing:-0.5px; }
-    .admin-btn { background:#222; color:#fff; border:0; border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; cursor:pointer; }
+    .admin-btn { position:relative; background:#222; color:#fff; border:0; border-radius:999px; padding:8px 16px; font-size:14px; font-weight:600; cursor:pointer; }
     .admin-btn.admin { background:var(--green); }
+    .order-badge { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 4px; background:#dc2626; color:#fff; font-size:11px; font-weight:800; line-height:18px; text-align:center; border-radius:999px; box-shadow:0 0 0 2px #fff; }
     .store-bar { background:#fff; border-radius:14px; padding:12px 14px; margin:12px 0; box-shadow:0 1px 3px rgba(0,0,0,.06); }
     .store-name { font-size:20px; font-weight:700; margin:0 0 2px; }
     .store-meta { font-size:13px; color:#555; display:flex; flex-wrap:wrap; gap:8px 14px; }
@@ -96,7 +97,7 @@
 <body>
   <header>
     <h1>Fresko</h1>
-    <button id="adminBtn" class="admin-btn">Admin</button>
+    <button id="adminBtn" class="admin-btn"><span id="adminBtnLabel">Admin</span><span id="adminOrderBadge" class="order-badge" style="display:none;"></span></button>
   </header>
 
   <main>
@@ -385,8 +386,9 @@
           currentUser = user;
           isAdmin = !!(user && user.uid === ADMIN_UID);
           const btn = document.getElementById('adminBtn');
-          if (btn) {
-            btn.textContent = isAdmin ? "Admin ✓" : "Admin";
+          const btnLabel = document.getElementById('adminBtnLabel');
+          if (btn && btnLabel) {
+            btnLabel.textContent = isAdmin ? "Admin ✓" : "Admin";
             btn.classList.toggle('admin', isAdmin);
           }
           // Orders are only readable by the admin (Firestore rules), so only
@@ -397,6 +399,7 @@
             ordersUnsub();
             ordersUnsub = null;
             orders = [];
+            updateOrderBadge();
           }
           // If admin panel open and lost privileges, close it
           const adminM = document.getElementById('adminModal');
@@ -474,16 +477,71 @@
       });
     }
 
+    let knownOrderIds = null; // null until the first snapshot after (re)subscribing
+
     function listenOrders() {
       if (ordersUnsub) ordersUnsub();
+      knownOrderIds = null;
       const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50));
       ordersUnsub = onSnapshot(q, (snap) => {
-        orders = [];
-        snap.forEach(d => orders.push({ ...d.data(), id: d.id }));
+        const next = [];
+        snap.forEach(d => next.push({ ...d.data(), id: d.id }));
+
+        // Only alert for orders that arrive after we're already listening,
+        // not the batch of pre-existing ones on first login.
+        if (knownOrderIds) {
+          const arrived = next.filter(o => !knownOrderIds.has(o.id));
+          if (arrived.length) notifyNewOrders(arrived);
+        }
+        knownOrderIds = new Set(next.map(o => o.id));
+
+        orders = next;
         renderAdminIfOpen();
+        updateOrderBadge();
       }, (err) => {
         console.error('[Fresko] orders onSnapshot error', err);
       });
+    }
+
+    let notifyAudioCtx = null;
+    function playNotifySound() {
+      try {
+        if (!notifyAudioCtx) notifyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = notifyAudioCtx;
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {
+        console.error('[Fresko] notify sound error', e);
+      }
+    }
+
+    function notifyNewOrders(arrived) {
+      playNotifySound();
+      const label = arrived.length === 1
+        ? `Nuevo pedido de ${arrived[0].customerName || 'cliente'} — $${Number(arrived[0].total || 0).toFixed(2)}`
+        : `${arrived.length} nuevos pedidos`;
+      showToast(label);
+    }
+
+    function updateOrderBadge() {
+      const badge = document.getElementById('adminOrderBadge');
+      if (!badge) return;
+      const pending = orders.filter(o => (o.status || 'sent') === 'sent').length;
+      if (isAdmin && pending > 0) {
+        badge.textContent = pending > 99 ? '99+' : String(pending);
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
     }
 
     function renderStoreInfo() {
