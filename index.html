@@ -151,38 +151,40 @@
   <div id="adminModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Panel Admin</h2>
+        <h2 id="adminModalTitle">Panel Admin</h2>
         <button class="close" data-close="adminModal">&times;</button>
       </div>
 
-      <div style="margin-bottom:14px;">
-        <strong>Tienda</strong>
-        <div class="form-row"><label>Nombre</label><input id="s_name" /></div>
-        <div class="form-row"><label>Subtítulo</label><input id="s_subtitle" /></div>
-        <div class="form-row"><label>Horario</label><input id="s_hours" /></div>
-        <div class="form-row"><label>Delivery</label><input id="s_delivery" /></div>
-        <div class="row">
-          <div class="form-row"><label>Delivery fee ($)</label><input id="s_fee" type="number" step="0.01" /></div>
-          <div class="form-row"><label>Mínimo orden ($)</label><input id="s_min" type="number" step="0.01" /></div>
+      <div id="ownerOnlyAdmin">
+        <div style="margin-bottom:14px;">
+          <strong>Tienda</strong>
+          <div class="form-row"><label>Nombre</label><input id="s_name" /></div>
+          <div class="form-row"><label>Subtítulo</label><input id="s_subtitle" /></div>
+          <div class="form-row"><label>Horario</label><input id="s_hours" /></div>
+          <div class="form-row"><label>Delivery</label><input id="s_delivery" /></div>
+          <div class="row">
+            <div class="form-row"><label>Delivery fee ($)</label><input id="s_fee" type="number" step="0.01" /></div>
+            <div class="form-row"><label>Mínimo orden ($)</label><input id="s_min" type="number" step="0.01" /></div>
+          </div>
+          <div class="form-row">
+            <label><input id="s_open" type="checkbox" style="width:auto;margin-right:6px;"> Tienda abierta</label>
+          </div>
+          <button id="saveStoreBtn" class="btn-green">Guardar ajustes de tienda</button>
         </div>
-        <div class="form-row">
-          <label><input id="s_open" type="checkbox" style="width:auto;margin-right:6px;"> Tienda abierta</label>
+
+        <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <strong>Productos (<span id="adminProdCount">0</span>)</strong>
+          <button id="newProductBtn" class="btn-secondary" style="padding:6px 12px;font-size:13px;">+ Nuevo</button>
         </div>
-        <button id="saveStoreBtn" class="btn-green">Guardar ajustes de tienda</button>
+
+        <button id="loadCatalogBtn" class="btn-green" style="margin-bottom:8px;">Cargar catálogo inicial (58 productos)</button>
+
+        <div id="adminList" class="admin-list"></div>
+
+        <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
       </div>
-
-      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <strong>Productos (<span id="adminProdCount">0</span>)</strong>
-        <button id="newProductBtn" class="btn-secondary" style="padding:6px 12px;font-size:13px;">+ Nuevo</button>
-      </div>
-
-      <button id="loadCatalogBtn" class="btn-green" style="margin-bottom:8px;">Cargar catálogo inicial (58 productos)</button>
-
-      <div id="adminList" class="admin-list"></div>
-
-      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <strong>Pedidos recientes (<span id="adminOrderCount">0</span>)</strong>
@@ -279,7 +281,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, addDoc, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, serverTimestamp, query, orderBy, limit, collectionGroup } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
     const firebaseConfig = {
@@ -357,17 +359,34 @@
 
     let app, auth, db, storage;
     let currentUser = null;
-    let isAdmin = false;
+    let staffRole = null;    // 'owner' | 'employee' | null
+    let isAdmin = false;     // signed in as owner OR employee (can open the panel, manage orders)
+    let isOwner = false;     // signed in as owner (products, store settings, sees $ amounts)
     let products = [];
     let settings = null;
     let orders = [];
+    let financialsByOrder = {}; // orderId -> {subtotal, deliveryFee, total, items}; owner-only
     let cart = [];
     let activeCategory = "Todos";
     let searchTerm = "";
     let productsUnsub = null;
     let settingsUnsub = null;
     let ordersUnsub = null;
+    let financialsUnsub = null;
     let testsRun = false;
+
+    // ADMIN_UID is always treated as owner, even without a staff/{uid} doc,
+    // so the original setup flow (README step 5) keeps working unchanged.
+    async function resolveStaffRole(uid) {
+      if (uid === ADMIN_UID) return 'owner';
+      try {
+        const snap = await getDoc(doc(db, 'staff', uid));
+        return snap.exists() ? (snap.data().role || null) : null;
+      } catch (e) {
+        console.error('[Fresko] staff role lookup error', e);
+        return null;
+      }
+    }
 
     async function initFirebase() {
       try {
@@ -382,17 +401,21 @@
         // logging in again.
         await setPersistence(auth, browserSessionPersistence);
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
           currentUser = user;
-          isAdmin = !!(user && user.uid === ADMIN_UID);
+          staffRole = user ? await resolveStaffRole(user.uid) : null;
+          isAdmin = staffRole === 'owner' || staffRole === 'employee';
+          isOwner = staffRole === 'owner';
+
           const btn = document.getElementById('adminBtn');
           const btnLabel = document.getElementById('adminBtnLabel');
           if (btn && btnLabel) {
-            btnLabel.textContent = isAdmin ? "Admin ✓" : "Admin";
+            btnLabel.textContent = isOwner ? "Admin ✓" : (isAdmin ? "Empleado ✓" : "Admin");
             btn.classList.toggle('admin', isAdmin);
           }
-          // Orders are only readable by the admin (Firestore rules), so only
-          // subscribe while logged in as admin, and tear down on logout.
+
+          // Orders are only readable by staff (Firestore rules), so only
+          // subscribe while logged in, and tear down on logout.
           if (isAdmin) {
             listenOrders();
           } else if (ordersUnsub) {
@@ -401,12 +424,25 @@
             orders = [];
             updateOrderBadge();
           }
+
+          // Order totals live in an owner-only subcollection, separate from
+          // the order itself, so employees can never fetch them.
+          if (isOwner) {
+            listenFinancials();
+          } else if (financialsUnsub) {
+            financialsUnsub();
+            financialsUnsub = null;
+            financialsByOrder = {};
+          }
+
           // If admin panel open and lost privileges, close it
           const adminM = document.getElementById('adminModal');
           if (adminM && adminM.classList.contains('active') && !isAdmin) {
             adminM.classList.remove('active');
             showToast("Sesión de admin finalizada", true);
           }
+
+          renderAdminIfOpen();
         });
 
         // Start listeners (they will render when data arrives)
@@ -503,6 +539,26 @@
       });
     }
 
+    function listenFinancials() {
+      if (financialsUnsub) financialsUnsub();
+      // No orderBy/limit here on purpose: a collection-group query with
+      // orderBy requires a manually-created Firestore index. This reads
+      // every financials doc ever written, which is fine at small-business
+      // order volumes but would need revisiting (add createdAt + limit +
+      // the index) if order history grows very large.
+      financialsUnsub = onSnapshot(collectionGroup(db, 'financials'), (snap) => {
+        const next = {};
+        snap.forEach(d => {
+          const orderId = d.ref.parent.parent.id;
+          next[orderId] = d.data();
+        });
+        financialsByOrder = next;
+        renderAdminIfOpen();
+      }, (err) => {
+        console.error('[Fresko] financials onSnapshot error', err);
+      });
+    }
+
     let notifyAudioCtx = null;
     function playNotifySound() {
       try {
@@ -527,7 +583,7 @@
     function notifyNewOrders(arrived) {
       playNotifySound();
       const label = arrived.length === 1
-        ? `Nuevo pedido de ${arrived[0].customerName || 'cliente'} — $${Number(arrived[0].total || 0).toFixed(2)}`
+        ? `Nuevo pedido de ${arrived[0].customerName || 'cliente'} (${(arrived[0].items || []).length} productos)`
         : `${arrived.length} nuevos pedidos`;
       showToast(label);
     }
@@ -895,18 +951,19 @@
 
     function saveOrderRecord(totals, extra) {
       if (!db) return;
+      // Split across two docs so employee staff logins (which can read
+      // orders/* to fulfill deliveries) never receive $ amounts at all —
+      // those only live in the owner-only orders/{id}/financials/summary
+      // subdocument, not because the UI hides a field, but because
+      // Firestore rules never let a non-owner read that subcollection.
+      const orderRef = doc(collection(db, 'orders'));
       const orderData = {
         items: totals.items.map(it => ({
           id: it.id,
           name: it.product.name,
           unit: it.product.unit,
-          price: it.product.price,
-          qty: it.qty,
-          lineTotal: it.lineTotal
+          qty: it.qty
         })),
-        subtotal: totals.subtotal,
-        deliveryFee: totals.fee,
-        total: totals.total,
         customerName: extra.name,
         address: extra.addr,
         paymentMethod: extra.pay,
@@ -915,7 +972,23 @@
         status: 'sent',
         createdAt: serverTimestamp()
       };
-      addDoc(collection(db, 'orders'), orderData).catch(err => {
+      const financialsData = {
+        items: totals.items.map(it => ({
+          id: it.id,
+          name: it.product.name,
+          price: it.product.price,
+          qty: it.qty,
+          lineTotal: it.lineTotal
+        })),
+        subtotal: totals.subtotal,
+        deliveryFee: totals.fee,
+        total: totals.total,
+        createdAt: serverTimestamp()
+      };
+      const batch = writeBatch(db);
+      batch.set(orderRef, orderData);
+      batch.set(doc(collection(orderRef, 'financials'), 'summary'), financialsData);
+      batch.commit().catch(err => {
         console.error('[Fresko] order save error', err);
       });
     }
@@ -940,17 +1013,22 @@
       btn.textContent = 'Ingresando...';
 
       try {
-        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+        const cred = await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+        const role = await resolveStaffRole(cred.user.uid);
         closeModal('loginModal');
-        // onAuthStateChanged will set isAdmin
-        setTimeout(() => {
-          if (isAdmin) {
-            openAdmin();
-          } else {
-            signOut(auth);
-            showToast("Este usuario no tiene permisos de administrador", true);
-          }
-        }, 220);
+        if (role === 'owner' || role === 'employee') {
+          // Set these directly instead of waiting on onAuthStateChanged's
+          // own (slower) role lookup, so the panel opens immediately;
+          // onAuthStateChanged will redundantly confirm the same values
+          // right after and start the orders/financials listeners.
+          staffRole = role;
+          isAdmin = true;
+          isOwner = role === 'owner';
+          openAdmin();
+        } else {
+          await signOut(auth);
+          showToast("Este usuario no tiene permisos de administrador", true);
+        }
       } catch (e) {
         console.error(e);
         let msg = "Error de inicio de sesión";
@@ -977,22 +1055,30 @@
         return;
       }
       showModal('adminModal');
-      renderAdminProducts();
-      renderAdminOrders();
-      // prefill store
-      if (settings) {
-        const s = settings;
-        setVal('s_name', s.name || '');
-        setVal('s_subtitle', s.subtitle || '');
-        setVal('s_hours', s.hours || '');
-        setVal('s_delivery', s.delivery || '');
-        setVal('s_fee', Number(s.deliveryFee || 0));
-        setVal('s_min', Number(s.minimumOrder || 0));
-        const openChk = document.getElementById('s_open');
-        if (openChk) openChk.checked = s.isOpen !== false;
+
+      const title = document.getElementById('adminModalTitle');
+      if (title) title.textContent = isOwner ? 'Panel Admin' : 'Panel de Pedidos';
+      const ownerSection = document.getElementById('ownerOnlyAdmin');
+      if (ownerSection) ownerSection.style.display = isOwner ? '' : 'none';
+
+      if (isOwner) {
+        renderAdminProducts();
+        // prefill store
+        if (settings) {
+          const s = settings;
+          setVal('s_name', s.name || '');
+          setVal('s_subtitle', s.subtitle || '');
+          setVal('s_hours', s.hours || '');
+          setVal('s_delivery', s.delivery || '');
+          setVal('s_fee', Number(s.deliveryFee || 0));
+          setVal('s_min', Number(s.minimumOrder || 0));
+          const openChk = document.getElementById('s_open');
+          if (openChk) openChk.checked = s.isOpen !== false;
+        }
+        // load catalog button visibility
+        toggleLoadCatalogBtn();
       }
-      // load catalog button visibility
-      toggleLoadCatalogBtn();
+      renderAdminOrders();
     }
 
     function setVal(id, v) {
@@ -1001,7 +1087,7 @@
     }
 
     async function saveStore() {
-      if (!isAdmin) return;
+      if (!isOwner) return;
       const btn = document.getElementById('saveStoreBtn');
       if (btn) btn.disabled = true;
       try {
@@ -1029,11 +1115,11 @@
       const btn = document.getElementById('loadCatalogBtn');
       if (!btn) return;
       const hasProducts = products.length > 0;
-      btn.style.display = (isAdmin && !hasProducts) ? '' : 'none';
+      btn.style.display = (isOwner && !hasProducts) ? '' : 'none';
     }
 
     async function loadInitialCatalog() {
-      if (!isAdmin) return;
+      if (!isOwner) return;
       if (products.length > 0) {
         showToast("Ya existen productos. No se puede sobrescribir.", true);
         return;
@@ -1151,7 +1237,7 @@
     }
 
     async function quickSave(pid, btn, statusEl) {
-      if (!isAdmin) return;
+      if (!isOwner) return;
       const itemEl = btn.closest('.admin-item');
       const priceIn = itemEl.querySelector('[data-qprice]');
       const avaIn = itemEl.querySelector('[data-qava]');
@@ -1261,7 +1347,7 @@
     }
 
     async function handlePhotoUpload(file, productIdHint, thumbEl, upBtn, statusEl, progEl) {
-      if (!isAdmin) return;
+      if (!isOwner) return;
 
       const MAX_SOURCE_MB = 20;
       if (file.size > MAX_SOURCE_MB * 1024 * 1024) {
@@ -1337,7 +1423,7 @@
     }
 
     async function saveFullProduct() {
-      if (!isAdmin) return;
+      if (!isOwner) return;
       const btn = document.getElementById('saveProductBtn');
       if (btn) btn.disabled = true;
 
@@ -1390,7 +1476,7 @@
     }
 
     async function deleteProduct(pid) {
-      if (!isAdmin) return;
+      if (!isOwner) return;
       if (!confirm("¿Eliminar este producto?")) return;
       const product = products.find(p => p.id === pid);
       try {
@@ -1446,6 +1532,12 @@
         const status = o.status || 'sent';
         const itemsSummary = (o.items || []).map(it => `${it.qty}× ${escapeHtml(it.name)}`).join(', ');
         const dateStr = formatOrderDate(o.createdAt);
+        // Employees never have read access to orders/{id}/financials, so
+        // this is genuinely absent for them, not just hidden in the UI.
+        const fin = isOwner ? financialsByOrder[o.id] : null;
+        const totalHtml = isOwner
+          ? `<strong>${fin ? '$' + Number(fin.total || 0).toFixed(2) : '…'}</strong>`
+          : '<span></span>';
 
         div.innerHTML = `
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
@@ -1456,7 +1548,7 @@
           <div class="small">${escapeHtml(o.paymentMethod || '')}${o.notes ? ' · ' + escapeHtml(o.notes) : ''}</div>
           <div class="small" style="margin:4px 0;">${itemsSummary}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-top:2px;">
-            <strong>$${Number(o.total || 0).toFixed(2)}</strong>
+            ${totalHtml}
             <span class="order-status ${escapeHtml(status)}">${escapeHtml(ORDER_STATUS_LABEL[status] || status)}</span>
           </div>
           <div class="prod-actions" style="margin-top:6px;">
@@ -1490,7 +1582,9 @@
     function renderAdminIfOpen() {
       const m = document.getElementById('adminModal');
       if (m && m.classList.contains('active') && isAdmin) {
-        renderAdminProducts();
+        const ownerSection = document.getElementById('ownerOnlyAdmin');
+        if (ownerSection) ownerSection.style.display = isOwner ? '' : 'none';
+        if (isOwner) renderAdminProducts();
         renderAdminOrders();
       }
     }

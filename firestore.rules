@@ -3,10 +3,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasStaffRole(role) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role == role;
+    }
+
+    // The original admin UID is always the owner, even without a staff/{uid}
+    // doc, so the pre-existing setup flow (README step 5) keeps working
+    // unchanged.
+    function isOwner() {
+      return isSignedIn()
+        && (request.auth.uid == 'gDK9Zay7iwSDh2dCdLdzXuR30PB2' || hasStaffRole('owner'));
+    }
+
+    function isStaff() {
+      return isOwner() || hasStaffRole('employee');
+    }
+
     function isValidOrder(data) {
-      return data.keys().hasAll(['items', 'subtotal', 'deliveryFee', 'total', 'customerName', 'address', 'paymentMethod', 'status', 'createdAt'])
+      return data.keys().hasAll(['items', 'customerName', 'address', 'paymentMethod', 'status', 'createdAt'])
         && data.items is list && data.items.size() > 0 && data.items.size() <= 100
-        && data.subtotal is number && data.deliveryFee is number && data.total is number
         && data.customerName is string && data.customerName.size() > 0 && data.customerName.size() <= 200
         && data.address is string && data.address.size() > 0 && data.address.size() <= 500
         && data.paymentMethod is string && data.paymentMethod.size() <= 100
@@ -14,22 +35,49 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    function isValidFinancials(data) {
+      return data.keys().hasAll(['subtotal', 'deliveryFee', 'total', 'items', 'createdAt'])
+        && data.subtotal is number && data.deliveryFee is number && data.total is number
+        && data.items is list && data.items.size() > 0 && data.items.size() <= 100
+        && data.createdAt == request.time;
+    }
+
     // Public read for products and store settings
     match /products/{productId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && request.auth.uid == 'gDK9Zay7iwSDh2dCdLdzXuR30PB2';
+      allow create, update, delete: if isOwner();
     }
 
     match /settings/{docId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && request.auth.uid == 'gDK9Zay7iwSDh2dCdLdzXuR30PB2';
+      allow create, update, delete: if isOwner();
+    }
+
+    // Owner manages who's staff; each user may read their own row so the
+    // app can tell owner vs employee apart right after login.
+    match /staff/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isOwner());
+      allow write: if isOwner();
     }
 
     // Customers (unauthenticated) can create orders so nothing is lost if
-    // WhatsApp never gets sent, but only the admin can read/manage them.
+    // WhatsApp never gets sent. Staff (owner + employees) can read orders
+    // to fulfill them and update only the status field. $ amounts are
+    // never part of this document at all -- they live in the owner-only
+    // financials subcollection below, so an employee login cannot fetch
+    // them under any circumstance.
     match /orders/{orderId} {
       allow create: if isValidOrder(request.resource.data);
-      allow read, update, delete: if request.auth != null && request.auth.uid == 'gDK9Zay7iwSDh2dCdLdzXuR30PB2';
+      allow read: if isStaff();
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['sent', 'fulfilled', 'cancelled'];
+      allow delete: if isOwner();
+
+      match /financials/{docId} {
+        allow create: if isValidFinancials(request.resource.data);
+        allow read, update, delete: if isOwner();
+      }
     }
 
     // Deny everything else by default

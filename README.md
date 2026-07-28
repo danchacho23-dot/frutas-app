@@ -171,31 +171,60 @@ Pruebas incluidas:
 **orders/{orderId}** (creado automáticamente al enviar un pedido por WhatsApp)
 ```js
 {
-  items: [{ id, name, unit, price, qty, lineTotal }],
-  subtotal: number,
-  deliveryFee: number,
-  total: number,
+  items: [{ id, name, unit, qty }],   // sin precio: los empleados leen esto
   customerName: string,
   address: string,
   paymentMethod: string,
   notes: string | null,
   storeOpenAtOrder: boolean,
-  status: "sent",
+  status: "sent" | "fulfilled" | "cancelled",
   createdAt: Timestamp
 }
 ```
-Cualquier visitante puede **crear** un pedido (así queda un registro aunque el cliente no complete el envío por WhatsApp), pero solo el admin puede leer, editar o borrar la colección `orders`.
+Cualquier visitante puede **crear** un pedido (así queda un registro aunque el cliente no complete el envío por WhatsApp). Dueño y empleados pueden **leer** pedidos y cambiar `status`; solo el dueño puede borrarlos.
+
+**orders/{orderId}/financials/summary** (mismo momento de creación, en subcolección aparte)
+```js
+{
+  items: [{ id, name, price, qty, lineTotal }],
+  subtotal: number,
+  deliveryFee: number,
+  total: number,
+  createdAt: Timestamp
+}
+```
+Solo el **dueño** puede leer esta subcolección — los montos en dólares nunca están en el documento principal del pedido, así que una cuenta de empleado no puede obtenerlos bajo ninguna circunstancia (no es solo que la interfaz los oculte).
+
+**staff/{uid}** (opcional — define quién es dueño/empleado además del `ADMIN_UID` original)
+```js
+{
+  role: "owner" | "employee"
+}
+```
+El `ADMIN_UID` configurado en el código siempre es dueño, incluso sin un documento aquí. Para agregar más cuentas (otro dueño, o empleados), crea el usuario en Authentication, copia su UID y crea un documento en `staff` con ese UID como ID del documento. Ver sección "Cuentas de empleados" más abajo.
 
 ## Seguridad implementada
 
 - Clientes: solo lectura de `products/*` y `settings/store`
-- Solo el UID admin puede escribir en productos, settings y subir/borrar en Storage `/products/*`
+- Solo el **dueño** puede escribir en productos, settings y subir/borrar en Storage `/products/*`
+- **Dueño y empleados** pueden leer y actualizar el estado de `orders/*`, pero **solo el dueño** puede leer los montos en `orders/*/financials/*`
 - Todas las demás rutas bloqueadas
 - Reglas completas listas para copiar
 
+## Cuentas de empleados (opcional)
+
+Por defecto solo existe la cuenta dueño (`ADMIN_UID`). Para dar acceso a un trabajador que vea y marque pedidos como entregados, **sin ver montos en dólares**:
+
+1. Firebase Console → Authentication → Users → Add user. Crea el email/contraseña del empleado.
+2. Copia el UID que Firebase le asignó.
+3. Firestore Database → Data → colección `staff` → Add document. Usa ese UID como **ID del documento** (no como campo), y agrega el campo `role` con valor `employee` (string).
+4. El empleado ahora puede tocar **Admin**, iniciar sesión, y ver el panel — mostrará solo "Pedidos recientes" (sin Tienda ni Productos), con nombre/dirección/artículos por pedido y botones para marcar Entregado/Cancelar, pero nunca un monto en $.
+
+Para dar a alguien más el rol de dueño completo, repite el mismo proceso pero con `role: owner`.
+
 ## Notas importantes
 
-- Cada pedido se guarda en Firestore (`orders`) al momento de tocar "Enviar por WhatsApp", antes de abrir el enlace de wa.me. Así el pedido queda registrado aunque el cliente cierre WhatsApp sin enviarlo. Para revisar pedidos, usa la consola de Firebase (Firestore → `orders`) con la cuenta admin.
+- Cada pedido se guarda en Firestore (`orders` + `orders/{id}/financials`) al momento de tocar "Enviar por WhatsApp", antes de abrir el enlace de wa.me. Así el pedido queda registrado aunque el cliente cierre WhatsApp sin enviarlo. Revísalos en el panel Admin (sección "Pedidos recientes") con cualquier cuenta de dueño o empleado.
 - Carrito se guarda solo en localStorage del navegador.
 - Al recargar productos (onSnapshot) se sincroniza: quita ocultos/borrados, actualiza precios, bloquea checkout si hay agotados.
 - No hay cuentas de cliente, ni pagos online (solo WhatsApp).
