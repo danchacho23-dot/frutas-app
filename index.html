@@ -152,6 +152,11 @@
     .card .btn:active { transform:scale(.97); }
     .card .btn:disabled { background:#c3c9c3; box-shadow:none; cursor:not-allowed; }
     .card .agotado { font-size:12px; color:#b91c1c; font-weight:700; text-align:center; margin-top:7px; }
+    .avail-badge {
+      margin-top:9px; text-align:center; padding:8px; border-radius:var(--r-md); font-weight:700; font-size:13px;
+    }
+    .avail-badge.available { background:#dcfce7; color:#166534; }
+    .avail-badge.unavailable { background:#fee2e2; color:#991b1b; }
     .qty-stepper {
       margin-top:9px; display:flex; align-items:center; justify-content:space-between; gap:6px;
       background:var(--green-50); border:1px solid var(--green-light); border-radius:var(--r-md);
@@ -515,6 +520,14 @@
     const ADMIN_UID = "gDK9Zay7iwSDh2dCdLdzXuR30PB2";
     const WHATSAPP = "50769829621";
 
+    // Single switch for "browse only, no buying" mode: hides prices, the
+    // add-to-cart / cart / checkout flow, and "Mis pedidos" from customers,
+    // showing just name/photo/description/availability instead. Flip this
+    // back to true (nothing else to change) to restore the full selling
+    // app -- the admin panel, product prices in the database, and all
+    // order data are completely untouched either way.
+    const SELLING_MODE = false;
+
     const PRODUCT_SEED = [
       {name:"Banana", category:"Frutas", price:0.85, unit:"kg", emoji:"🍌", description:"Dulce y energética, perfecta para el día a día."},
       {name:"Plátano verde", category:"Frutas", price:0.65, unit:"kg", emoji:"🍌", description:"Ideal para freír o cocinar. Rico en almidón."},
@@ -825,15 +838,18 @@
       const el = document.getElementById('storeInfo');
       if (!el || !settings) return;
       const open = !!settings.isOpen;
+      const deliveryInfoHTML = SELLING_MODE
+        ? `<span>🚚 ${escapeHtml(settings.delivery || '')}</span>
+           <span>Delivery: $${Number(settings.deliveryFee || 0).toFixed(2)}</span>
+           <span>Mínimo: $${Number(settings.minimumOrder || 0).toFixed(2)}</span>`
+        : '';
       el.innerHTML = `
         <div class="store-name">${escapeHtml(settings.name || 'Fresko')}</div>
         <div class="store-meta">
           <span>${escapeHtml(settings.subtitle || '')}</span>
           <span class="badge ${open ? 'open' : 'closed'}">${open ? 'ABIERTA' : 'CERRADA'}</span>
           <span>🕒 ${escapeHtml(settings.hours || '')}</span>
-          <span>🚚 ${escapeHtml(settings.delivery || '')}</span>
-          <span>Delivery: $${Number(settings.deliveryFee || 0).toFixed(2)}</span>
-          <span>Mínimo: $${Number(settings.minimumOrder || 0).toFixed(2)}</span>
+          ${deliveryInfoHTML}
         </div>
       `;
     }
@@ -897,18 +913,17 @@
         const cartItem = cart.find(c => c.id === p.id);
         const qtyInCart = cartItem ? Number(cartItem.qty || 0) : 0;
 
-        card.innerHTML = `
-          <div class="media">${mediaHTML}</div>
-          <div class="info">
-            <div class="name">${escapeHtml(p.name)}</div>
-            <div class="desc">${escapeHtml(p.description || '')}</div>
-            <div class="price-row">
-              <div>
-                <span class="price">$${price}</span>
-                <span class="unit">/ ${escapeHtml(p.unit || '')}</span>
-              </div>
-            </div>
-            ${avail
+        const priceRowHTML = SELLING_MODE
+          ? `<div class="price-row">
+               <div>
+                 <span class="price">$${price}</span>
+                 <span class="unit">/ ${escapeHtml(p.unit || '')}</span>
+               </div>
+             </div>`
+          : '';
+
+        const actionHTML = SELLING_MODE
+          ? (avail
               ? (qtyInCart > 0
                   ? `<div class="qty-stepper">
                        <button data-dec="${escapeHtml(p.id)}" aria-label="Quitar uno">−</button>
@@ -916,8 +931,16 @@
                        <button data-inc="${escapeHtml(p.id)}" aria-label="Agregar uno">+</button>
                      </div>`
                   : `<button class="btn" data-add="${escapeHtml(p.id)}">Agregar</button>`)
-              : `<div class="agotado">AGOTADO</div>`
-            }
+              : `<div class="agotado">AGOTADO</div>`)
+          : `<div class="avail-badge ${avail ? 'available' : 'unavailable'}">${avail ? 'Disponible' : 'Agotado'}</div>`;
+
+        card.innerHTML = `
+          <div class="media">${mediaHTML}</div>
+          <div class="info">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="desc">${escapeHtml(p.description || '')}</div>
+            ${priceRowHTML}
+            ${actionHTML}
           </div>
         `;
         const img = card.querySelector('.media img');
@@ -926,7 +949,7 @@
             this.replaceWith(document.createTextNode(this.dataset.fallback || '🥬'));
           };
         }
-        if (avail) {
+        if (SELLING_MODE && avail) {
           if (qtyInCart > 0) {
             const decBtn = card.querySelector('[data-dec]');
             const incBtn = card.querySelector('[data-inc]');
@@ -2053,6 +2076,16 @@
     }
 
     function setupUI() {
+      // Browse-only mode: no buying UI reachable at all, regardless of cart
+      // state. Nothing else needs to change to restore it -- flip
+      // SELLING_MODE back to true.
+      if (!SELLING_MODE) {
+        const cartBar = document.getElementById('cartBar');
+        if (cartBar) cartBar.style.display = 'none';
+        const myOrdersBtn = document.getElementById('myOrdersBtn');
+        if (myOrdersBtn) myOrdersBtn.style.display = 'none';
+      }
+
       // categories
       renderCategories();
 
